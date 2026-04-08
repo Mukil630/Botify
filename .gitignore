@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+flask-app/instance/
+flask-app/*.db
+flask-app/.env
+
+# Node
+baileys-service/node_modules/
+baileys-service/auth/
+baileys-service/.env
+
+# OS
+.DS_Store
+Thumbs.db

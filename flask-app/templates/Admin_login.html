@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login - Botify</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-container { background: white; border-radius: 10px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 30px; font-size: 48px; }
+        .title { text-align: center; color: #333; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #333; font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        input:focus { outline: none; border-color: #25D366; }
+        .btn { width: 100%; padding: 14px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn:hover { background: #128C7E; }
+        .error { background: #ffeaea; color: #ff4444; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 13px; display: none; }
+        .warning { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; border-left: 4px solid #ffc107; }
+        .back-link { text-align: center; margin-top: 15px; }
+        .back-link a { color: #25D366; text-decoration: none; font-size: 13px; }
+        .back-link a:hover { text-decoration: underline; }
+        .messages { margin-bottom: 15px; }
+        .alert { padding: 12px; border-radius: 5px; margin-bottom: 10px; font-size: 13px; }
+        .alert-danger { background: #ffeaea; color: #ff4444; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="logo">🔐</div>
+    <div class="title">Admin Access</div>
+    <div class="subtitle">Botify Admin Dashboard</div>
+
+    <!-- Flash messages -->
+    <div class="messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-danger">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Warning -->
+    <div class="warning">
+        ⚠️ This is a restricted area. Only the admin can access this dashboard.
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Admin Password</label>
+            <input type="password" name="password" placeholder="Enter admin password" required autofocus>
+        </div>
+
+        <button type="submit" class="btn">Login to Admin</button>
+    </form>
+
+    <div class="back-link">
+        <a href="/">← Back to Home</a>
+    </div>
+</div>
+
+</body>
+</html>

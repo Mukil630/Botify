@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Support - Admin</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f3f4f6; }
+        .navbar {
+            background: #16a34a;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .navbar h1 { color: #fff; font-size: 20px; }
+        .navbar a { color: #fff; text-decoration: none; margin-left: 24px; font-size: 14px; }
+        .navbar a:hover { text-decoration: underline; }
+        .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+        h2 { font-size: 22px; color: #111; margin-bottom: 24px; }
+        .flash {
+            background: #dcfce7;
+            border: 1px solid #16a34a;
+            color: #15803d;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .flash.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+        .empty {
+            background: #fff;
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 15px;
+            border: 1px solid #e5e7eb;
+        }
+        .ticket-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .ticket-info { flex: 1; }
+        .ticket-info h3 { font-size: 15px; color: #111; margin-bottom: 4px; }
+        .ticket-info p { font-size: 13px; color: #6b7280; margin-bottom: 2px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .badge.submitted { background: #fef9c3; color: #a16207; }
+        .badge.pending   { background: #fee2e2; color: #dc2626; }
+        .amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: #16a34a;
+            min-width: 80px;
+            text-align: center;
+        }
+        .actions { display: flex; gap: 10px; flex-direction: column; }
+        .btn-resolve {
+            padding: 10px 20px;
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-resolve:hover { background: #15803d; }
+        .btn-reject {
+            padding: 10px 20px;
+            background: #fff;
+            color: #dc2626;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-reject:hover { background: #fee2e2; }
+        .order-id { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>⚙️ Admin Dashboard</h1>
+    <div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/revenue">Revenue</a>
+        <a href="/admin/support">Support</a>
+        <a href="/admin/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <h2>💳 Pending Payments</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="flash {% if '❌' in msg %}error{% endif %}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if tickets %}
+        {% for ticket in tickets %}
+        <div class="ticket-card">
+            <div class="ticket-info">
+                <span class="badge {{ ticket.status|lower }}">{{ ticket.status }}</span>
+                <h3>{{ ticket.user_name }} — {{ ticket.user_email }}</h3>
+                <p>📦 Plan: <strong>{{ ticket.plan|upper }}</strong></p>
+                <p>📅 Submitted: {{ ticket.created }}</p>
+                <p class="order-id">Order ID: {{ ticket.order_id }}</p>
+            </div>
+            <div class="amount">₹{{ ticket.amount }}</div>
+            <div class="actions">
+                <form method="POST" action="/admin/support/{{ ticket.id }}/resolve">
+                    <button type="submit" class="btn-resolve">✅ Resolve</button>
+                </form>
+                <form method="POST" action="/admin/support/{{ ticket.id }}/reject">
+                    <button type="submit" class="btn-reject">❌ Reject</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">
+            🎉 No pending payments! Everything is clear.
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

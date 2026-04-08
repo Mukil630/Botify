@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Business Info</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: white; font-size: 20px; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { padding: 30px; max-width: 600px; margin: auto; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #25D366; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #333; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 80px; resize: vertical; }
+        .btn { background: #25D366; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-top: 20px; width: 100%; }
+        .btn:hover { background: #128C7E; }
+        .btn-back { background: #888; display: inline-block; padding: 8px 16px; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px; }
+        .flash { background: #e8f5e9; color: #25D366; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🤖 WhatsApp Bot SaaS</h1>
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <a href="/" class="btn-back">← Back</a>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p class="flash">✅ {{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="card">
+            <h2>🏢 Business Information</h2>
+            <p style="color:#888;margin-bottom:15px;">This info will be used by your bot to answer customer questions!</p>
+            <form method="POST">
+                <label>📍 Address</label>
+                <textarea name="address" placeholder="e.g. 123 Main Street, Chennai, Tamil Nadu">{{ info.address if info else '' }}</textarea>
+
+                <label>⏰ Business Timings</label>
+                <input type="text" name="timings" placeholder="e.g. Mon-Sat: 9AM - 9PM, Sunday: Closed" value="{{ info.timings if info else '' }}">
+
+                <label>🌐 Website (optional)</label>
+                <input type="text" name="website" placeholder="e.g. www.yourbusiness.com" value="{{ info.website if info else '' }}">
+
+                <label>ℹ️ Extra Info</label>
+                <textarea name="extra_info" placeholder="e.g. Free parking available, Home delivery available, etc.">{{ info.extra_info if info else '' }}</textarea>
+
+                <button type="submit" class="btn">💾 Save Business Info</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

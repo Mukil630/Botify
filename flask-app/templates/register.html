@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - WhatsApp Bot SaaS</title>
+    <style>
+        body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 10px; width: 380px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #25D366; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #25D366; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #128C7E; }
+        .flash { color: red; text-align: center; }
+        a { color: #25D366; }
+        p { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🤖 Create Account</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p class="flash">{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="business_name" placeholder="Business Name (e.g. Raja Restaurant)">
+            <input type="text" name="whatsapp_number" placeholder="Your WhatsApp Number (+91XXXXXXXXXX)">
+            <button type="submit">Create Account</button>
+        </form>
+        <p>Already have account? <a href="/login">Login here</a></p>
+    </div>
+</body>
+</html>

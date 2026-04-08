@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Service</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: white; font-size: 20px; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { padding: 30px; max-width: 600px; margin: auto; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #25D366; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #333; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 80px; resize: vertical; }
+        .btn { background: #25D366; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-top: 20px; width: 100%; }
+        .btn:hover { background: #128C7E; }
+        .btn-back { background: #888; display: inline-block; padding: 8px 16px; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px; }
+        .flash { background: #e8f5e9; color: #25D366; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; }
+        .hint { color: #888; font-size: 12px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🤖 WhatsApp Bot SaaS</h1>
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <a href="/" class="btn-back">← Back</a>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p class="flash">✅ {{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="card">
+            <h2>➕ Add Service / Product</h2>
+            <p style="color:#888;margin-bottom:15px;">Customer types "services" → Bot shows this list automatically!</p>
+            <form method="POST">
+                <label>🛎️ Service / Product Name</label>
+                <input type="text" name="service_name" placeholder="e.g. Haircut / Consultation / Biryani / Room Booking" required>
+
+                <label>💰 Price</label>
+                <input type="text" name="price" placeholder="e.g. 299 or 299-599 or Free">
+                <p class="hint">Leave empty if price varies</p>
+
+                <label>📝 Description</label>
+                <textarea name="description" placeholder="e.g. Includes wash and styling / 30 min session / Full plate with raita"></textarea>
+
+                <button type="submit" class="btn">➕ Add Service</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

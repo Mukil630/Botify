@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Botify</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #0a0f1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .box {
+            background: #111827;
+            padding: 40px;
+            border-radius: 16px;
+            width: 380px;
+            border: 1px solid #1f2937;
+        }
+        .logo { text-align: center; font-size: 40px; margin-bottom: 8px; }
+        h2 { color: #fff; text-align: center; font-size: 22px; margin-bottom: 6px; }
+        .subtitle { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 28px; }
+        label { display: block; color: #9ca3af; font-size: 13px; margin-bottom: 6px; margin-top: 14px; }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0d1526;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #00c896; }
+        button[type="submit"] {
+            width: 100%;
+            padding: 13px;
+            background: #00c896;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 22px;
+        }
+        button[type="submit"]:hover { background: #00a07a; }
+        .flash { color: #ef4444; text-align: center; font-size: 13px; margin-bottom: 12px;
+                 background: rgba(239,68,68,0.1); padding: 8px; border-radius: 6px; }
+        .register-link { text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280; }
+        .register-link a { color: #00c896; text-decoration: none; }
+
+        .admin-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 32px 0 16px;
+        }
+        .admin-divider::before, .admin-divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #1f2937;
+        }
+        .admin-divider span {
+            font-size: 10px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .admin-section {
+            background: #0d1526;
+            border: 1px solid #1f2937;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .admin-section-title {
+            font-size: 11px;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .admin-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #374151;
+            border-radius: 50%;
+        }
+        .admin-section input[type="password"] {
+            background: #111827;
+            border-color: #1f2937;
+            font-size: 13px;
+            padding: 9px 12px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .admin-section input[type="password"]:focus { border-color: #534AB7; }
+        .admin-login-btn {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a3e;
+            color: #9ca3af;
+            border: 1px solid #2d2d5e;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .admin-login-btn:hover {
+            background: #252560;
+            color: #a78bfa;
+            border-color: #534AB7;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="logo">🤖</div>
+    <h2>Botify</h2>
+    <div class="subtitle">WhatsApp Bot SaaS</div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p class="flash">{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/login">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="your@email.com" required>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+        <button type="submit">Login →</button>
+    </form>
+
+    <div class="register-link">
+        No account? <a href="/register">Register here</a>
+    </div>
+
+    <!-- Admin section — direct form POST -->
+    <div class="admin-divider">
+        <span>restricted</span>
+    </div>
+
+    <div class="admin-section">
+        <div class="admin-section-title">Admin access only</div>
+        <form method="POST" action="/admin/login">
+            <input type="password" name="password" placeholder="Admin password" autocomplete="off">
+            <button type="submit" class="admin-login-btn">Access Admin Panel</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

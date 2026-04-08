@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upgrade Plan - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --green: #00c896;
+            --green-dark: #00a07a;
+            --bg: #0a0f1e;
+            --card: #111827;
+            --border: #1f2937;
+            --text: #e5e7eb;
+            --muted: #6b7280;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(17,24,39,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; }
+        .navbar-brand span { color: var(--green); }
+        .navbar a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; }
+        .navbar a:hover { color: var(--text); }
+
+        .container { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+
+        /* HEADER */
+        .header-card {
+            background: linear-gradient(135deg, #111827, #0d1a2d);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .header-card h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .header-card p  { font-size: 13px; color: var(--muted); }
+        .current-plan-chip {
+            background: rgba(0,200,150,0.08);
+            border: 1px solid rgba(0,200,150,0.25);
+            border-radius: 12px;
+            padding: 10px 18px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .current-plan-chip .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .current-plan-chip .value { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--green); margin-top: 2px; }
+
+        /* PENDING BANNER */
+        .pending-banner {
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .pending-banner .icon { font-size: 28px; flex-shrink: 0; }
+        .pending-banner h4 { font-size: 14px; font-weight: 700; color: var(--yellow); margin-bottom: 3px; }
+        .pending-banner p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+        /* PLANS GRID */
+        .plans-label { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px; text-align: center; }
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .plan-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            position: relative;
+        }
+        .plan-card:hover { border-color: var(--green); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,200,150,0.1); }
+        .plan-card.popular { border-color: var(--green); }
+        .popular-badge {
+            position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+            background: var(--green); color: #000;
+            font-size: 10px; font-weight: 800; padding: 3px 12px; border-radius: 999px;
+            white-space: nowrap; letter-spacing: .3px;
+        }
+        .plan-icon  { font-size: 32px; margin-bottom: 10px; }
+        .plan-name  { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .plan-price { font-size: 30px; font-weight: 800; color: var(--green); }
+        .plan-price span { font-size: 13px; color: var(--muted); font-weight: 400; }
+        .plan-limit { font-size: 12px; color: var(--muted); margin: 5px 0 14px; }
+        .plan-features { text-align: left; margin-bottom: 18px; list-style: none; }
+        .plan-features li { font-size: 12px; color: #9ca3af; padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+        .plan-features li::before { content: "✓"; color: var(--green); font-weight: 700; font-size: 12px; }
+        .pay-btn {
+            width: 100%; padding: 11px;
+            background: var(--green); color: #000;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background .2s;
+        }
+        .pay-btn:hover { background: var(--green-dark); }
+
+        /* HOW IT WORKS */
+        .how-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 24px;
+        }
+        .how-card h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 18px; }
+        .steps { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .step { text-align: center; flex: 1; min-width: 90px; }
+        .step .s-icon { font-size: 26px; margin-bottom: 6px; }
+        .step .s-num  { font-size: 11px; color: var(--green); font-weight: 700; margin-bottom: 3px; }
+        .step .s-text { font-size: 11px; color: var(--muted); }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            width: 420px; max-width: 95vw;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: #fff; }
+        .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); line-height: 1; }
+        .close-btn:hover { color: var(--text); }
+
+        .order-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+        .order-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+        .order-row span { color: var(--muted); }
+        .order-row strong { color: var(--text); }
+
+        /* Tabs */
+        .pay-tabs { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 18px; }
+        .pay-tab {
+            flex: 1; padding: 9px; text-align: center;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            background: transparent; color: var(--muted); border: none; transition: all .2s;
+        }
+        .pay-tab.active { background: var(--green); color: #000; }
+
+        /* QR */
+        .qr-section { display: none; text-align: center; }
+        .qr-section.active { display: block; }
+        #qrcode {
+            display: inline-block; padding: 10px;
+            background: white; border-radius: 12px; margin-bottom: 10px;
+        }
+        .qr-note { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+        /* UPI */
+        .upi-section { display: none; text-align: center; }
+        .upi-section.active { display: block; }
+        .upi-open-btn {
+            display: block; width: 100%; padding: 14px;
+            background: var(--green); color: #000;
+            border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            text-decoration: none; margin-bottom: 10px;
+        }
+        .upi-apps { display: flex; justify-content: center; gap: 8px; margin: 8px 0 14px; flex-wrap: wrap; }
+        .upi-app  { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 11px; color: var(--muted); }
+
+        /* PAID button */
+        .paid-btn {
+            width: 100%; padding: 13px;
+            background: rgba(0,200,150,0.1);
+            color: var(--green);
+            border: 1px solid rgba(0,200,150,0.3);
+            border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            margin-top: 10px; transition: background .2s;
+        }
+        .paid-btn:hover { background: rgba(0,200,150,0.2); }
+
+        /* STATUS STATES */
+        .status-msg { text-align: center; font-size: 13px; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; }
+        .status-msg.loading { background: rgba(255,255,255,0.04); color: var(--muted);  display: block; }
+        .status-msg.error   { background: rgba(239,68,68,0.08);   color: var(--red);    display: block; }
+
+        /* ── PAYMENT SUBMITTED STATE (replaces modal content) ── */
+        .submitted-view { display: none; text-align: center; padding: 10px 0; }
+        .submitted-view .big-icon { font-size: 56px; margin-bottom: 14px; }
+        .submitted-view h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .submitted-view p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 6px; }
+        .submitted-view .plan-highlight {
+            display: inline-block;
+            background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.25);
+            color: var(--green); border-radius: 8px;
+            padding: 8px 18px; font-weight: 700; font-size: 14px;
+            margin: 12px 0;
+        }
+        .submitted-view .steps-mini { margin: 14px 0; text-align: left; }
+        .submitted-view .steps-mini li {
+            font-size: 12px; color: var(--muted); padding: 4px 0;
+            list-style: none; display: flex; align-items: center; gap: 8px;
+        }
+        .submitted-view .steps-mini li span { font-size: 15px; }
+        .go-home-btn {
+            display: block; width: 100%; padding: 12px;
+            background: var(--green); color: #000;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            text-decoration: none; margin-top: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .plans-grid { grid-template-columns: 1fr; }
+            .steps { gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <a href="/">← Dashboard</a>
+</div>
+
+<div class="container">
+
+    <div class="header-card">
+        <div>
+            <h2>⚡ Upgrade Your Plan</h2>
+            <p>More messages per day = more customers served automatically!</p>
+        </div>
+        <div class="current-plan-chip">
+            <div class="label">Current Plan</div>
+            <div class="value">{{ plan.plan_name | upper }} · {{ plan.daily_limit }} msg/day</div>
+        </div>
+    </div>
+
+    <!-- Show pending banner if payment submitted but not confirmed -->
+    {% set latest_payment = None %}
+    {% if plan.plan_name == 'free' %}
+    <div class="pending-banner" id="pendingBanner" style="display:none;">
+        <div class="icon">⏳</div>
+        <div>
+            <h4>Payment Pending Confirmation</h4>
+            <p>You have a payment waiting for admin confirmation. Usually confirmed within 1 hour. Your plan will upgrade automatically once confirmed.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="plans-label">Choose Your Plan</div>
+
+    <div class="plans-grid">
+        <!-- Starter -->
+        <div class="plan-card" onclick="openPayment('starter', 49)">
+            <div class="plan-icon">🌱</div>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">₹49 <span>/month</span></div>
+            <div class="plan-limit">20 messages / day</div>
+            <ul class="plan-features">
+                <li>20 AI replies/day</li>
+                <li>WhatsApp bot active</li>
+                <li>Booking management</li>
+                <li>Conversation history</li>
+                <li>30 days validity</li>
+            </ul>
+            <button class="pay-btn">Pay ₹49 →</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="plan-card popular" onclick="openPayment('pro', 199)">
+            <div class="popular-badge">⭐ Most Popular</div>
+            <div class="plan-icon">🚀</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">₹199 <span>/month</span></div>
+            <div class="plan-limit">100 messages / day</div>
+            <ul class="plan-features">
+                <li>100 AI replies/day</li>
+                <li>WhatsApp bot active</li>
+                <li>Booking management</li>
+                <li>Full conversation history</li>
+                <li>Priority support</li>
+                <li>30 days validity</li>
+            </ul>
+            <button class="pay-btn">Pay ₹199 →</button>
+        </div>
+
+        <!-- Business -->
+        <div class="plan-card" onclick="openPayment('business', 499)">
+            <div class="plan-icon">🏢</div>
+            <div class="plan-name">Business</div>
+            <div class="plan-price">₹499 <span>/month</span></div>
+            <div class="plan-limit">500 messages / day</div>
+            <ul class="plan-features">
+                <li>500 AI replies/day</li>
+                <li>WhatsApp bot active</li>
+                <li>Booking management</li>
+                <li>Full conversation history</li>
+                <li>Priority support</li>
+                <li>30 days validity</li>
+            </ul>
+            <button class="pay-btn">Pay ₹499 →</button>
+        </div>
+    </div>
+
+    <div class="how-card">
+        <h4>⚡ How It Works</h4>
+        <div class="steps">
+            <div class="step"><div class="s-icon">👆</div><div class="s-num">1. Choose Plan</div><div class="s-text">Pick Starter, Pro or Business</div></div>
+            <div class="step"><div class="s-icon">📱</div><div class="s-num">2. Pay via UPI</div><div class="s-text">Scan QR or open UPI app</div></div>
+            <div class="step"><div class="s-icon">✅</div><div class="s-num">3. Click "I Paid"</div><div class="s-text">Confirm your payment</div></div>
+            <div class="step"><div class="s-icon">⏳</div><div class="s-num">4. Admin Confirms</div><div class="s-text">Plan activates within 1 hr</div></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── PAYMENT MODAL ── -->
+<div class="modal-overlay" id="payModal">
+    <div class="modal">
+
+        <!-- PAYMENT FORM VIEW -->
+        <div id="payFormView">
+            <div class="modal-header">
+                <h3>💳 Complete Payment</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+
+            <div class="order-box">
+                <div class="order-row"><span>Plan</span>    <strong id="modalPlanName">—</strong></div>
+                <div class="order-row"><span>Amount</span>  <strong id="modalAmount">—</strong></div>
+                <div class="order-row"><span>Order ID</span><strong id="modalOrderId">Generating...</strong></div>
+            </div>
+
+            <div class="pay-tabs">
+                <button class="pay-tab active" id="tabQR"  onclick="switchTab('qr')">📷 Scan QR</button>
+                <button class="pay-tab"        id="tabUPI" onclick="switchTab('upi')">📱 UPI App</button>
+            </div>
+
+            <!-- QR -->
+            <div class="qr-section active" id="qrSection">
+                <div id="qrcode"></div>
+                <p class="qr-note">Open any UPI app → Scan → Pay</p>
+                <p class="qr-note" style="color:var(--green);font-weight:600;">UPI: mukilarasu55@oksbi</p>
+            </div>
+
+            <!-- UPI Deep Link -->
+            <div class="upi-section" id="upiSection">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Tap below — amount pre-filled in your UPI app:</p>
+                <a id="upiDeepLink" href="#" class="upi-open-btn" onclick="openUPI(event)">📱 Open UPI App & Pay</a>
+                <div class="upi-apps">
+                    <span class="upi-app">Google Pay</span>
+                    <span class="upi-app">PhonePe</span>
+                    <span class="upi-app">Paytm</span>
+                    <span class="upi-app">BHIM</span>
+                </div>
+                <p style="font-size:12px;color:var(--muted);">UPI ID: <strong style="color:var(--text);">mukilarasu55@oksbi</strong></p>
+            </div>
+
+            <!-- I Paid button -->
+            <button class="paid-btn" onclick="verifyPayment()">
+                ✅ I Have Paid — Submit
+            </button>
+
+            <div class="status-msg" id="statusMsg"></div>
+        </div>
+
+        <!-- ── SUBMITTED SUCCESS VIEW (shown after "I Paid") ── -->
+        <div class="submitted-view" id="submittedView">
+            <div class="big-icon">⏳</div>
+            <h3>Payment Submitted!</h3>
+            <p>Your payment is received and is <strong style="color:var(--yellow);">pending admin confirmation</strong>.</p>
+            <div class="plan-highlight" id="submittedPlanName">— Plan</div>
+            <p style="font-size:12px;color:var(--muted);">Order: <span id="submittedOrderId">—</span></p>
+
+            <ul class="steps-mini">
+                <li><span>✅</span> Payment submitted successfully</li>
+                <li><span>⏳</span> Admin will verify your payment</li>
+                <li><span>🚀</span> Plan activates automatically — usually within 1 hour</li>
+                <li><span>📱</span> You'll see the updated plan on your dashboard</li>
+            </ul>
+
+            <p style="font-size:12px;color:var(--muted);">
+                ⚠️ Your plan shows <strong style="color:var(--text);">Free</strong> until admin confirms. This is normal — don't pay again!
+            </p>
+
+            <a href="/" class="go-home-btn">← Go to Dashboard</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentPlan    = '';
+    let currentOrderId = '';
+    let currentUpiLink = '';
+
+    // Check if there's a pending payment on page load
+    window.addEventListener('load', async () => {
+        try {
+            const res  = await fetch('/api/payment-status');
+            const data = await res.json();
+            if (data.payment_status === 'submitted' && data.current_plan === 'free') {
+                const banner = document.getElementById('pendingBanner');
+                if (banner) banner.style.display = 'flex';
+            }
+        } catch(e) {}
+    });
+
+    function openPayment(plan, amount) {
+        currentPlan = plan;
+
+        // Reset views
+        document.getElementById('payFormView').style.display  = 'block';
+        document.getElementById('submittedView').style.display = 'none';
+
+        document.getElementById('modalPlanName').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+        document.getElementById('modalAmount').textContent   = '₹' + amount;
+        document.getElementById('modalOrderId').textContent  = 'Generating...';
+        document.getElementById('statusMsg').className       = 'status-msg';
+        document.getElementById('statusMsg').textContent     = '';
+
+        document.getElementById('payModal').classList.add('active');
+        switchTab('qr');
+
+        fetch('/api/create-order', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ plan: plan })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                currentOrderId = data.order_id;
+                currentUpiLink = data.upi_link;
+                document.getElementById('modalOrderId').textContent = data.order_id;
+                document.getElementById('upiDeepLink').href         = data.upi_link;
+                generateQR(data.upi_link);
+            } else {
+                showStatus('❌ ' + (data.error || 'Error creating order'), 'error');
+            }
+        })
+        .catch(() => showStatus('❌ Network error. Try again.', 'error'));
+    }
+
+    function generateQR(upiLink) {
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
+        new QRCode(container, {
+            text:         upiLink,
+            width:        180,
+            height:       180,
+            colorDark:    '#000000',
+            colorLight:   '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('qrSection').classList.toggle('active',  tab === 'qr');
+        document.getElementById('upiSection').classList.toggle('active', tab === 'upi');
+        document.getElementById('tabQR').classList.toggle('active',  tab === 'qr');
+        document.getElementById('tabUPI').classList.toggle('active', tab === 'upi');
+    }
+
+    function openUPI(e) {
+        e.preventDefault();
+        if (currentUpiLink) window.location.href = currentUpiLink;
+    }
+
+    function verifyPayment() {
+        if (!currentOrderId) {
+            showStatus('⏳ Please wait — order is being generated...', 'loading');
+            return;
+        }
+
+        const btn = document.querySelector('.paid-btn');
+        btn.disabled    = true;
+        btn.textContent = '⏳ Submitting...';
+        showStatus('⏳ Submitting your payment...', 'loading');
+
+        fetch('/api/verify-payment', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ order_id: currentOrderId, plan: currentPlan })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // ── Show submitted view (NOT redirect to dashboard) ──
+                document.getElementById('payFormView').style.display  = 'none';
+                document.getElementById('submittedView').style.display = 'block';
+                document.getElementById('submittedPlanName').textContent =
+                    currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) + ' Plan';
+                document.getElementById('submittedOrderId').textContent = currentOrderId;
+
+                // Show pending banner on page
+                const banner = document.getElementById('pendingBanner');
+                if (banner) banner.style.display = 'flex';
+            } else {
+                btn.disabled    = false;
+                btn.textContent = '✅ I Have Paid — Submit';
+                showStatus('❌ ' + (data.error || 'Submission failed. Try again.'), 'error');
+            }
+        })
+        .catch(() => {
+            btn.disabled    = false;
+            btn.textContent = '✅ I Have Paid — Submit';
+            showStatus('❌ Network error. Try again.', 'error');
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('payModal').classList.remove('active');
+        currentPlan    = '';
+        currentOrderId = '';
+        currentUpiLink = '';
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMsg');
+        el.textContent = msg;
+        el.className   = 'status-msg ' + type;
+    }
+
+    document.getElementById('payModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users - Admin Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .navbar h1 { font-size: 22px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 14px; }
+        .nav-links a:hover { text-decoration: underline; }
+        .container { padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .page-title { color: #333; font-size: 28px; margin-bottom: 30px; font-weight: bold; }
+        
+        .section { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: bold; color: #333; font-size: 13px; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #666; }
+        tr:hover { background: #fafafa; }
+        
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge-free { background: #e8e8e8; color: #666; }
+        .badge-starter { background: #e3f2fd; color: #1976d2; }
+        .badge-pro { background: #f3e5f5; color: #7b1fa2; }
+        .badge-business { background: #fff3e0; color: #e65100; }
+        
+        .action-btn { color: #25D366; text-decoration: none; font-size: 12px; font-weight: bold; padding: 6px 10px; display: inline-block; }
+        .action-btn:hover { text-decoration: underline; }
+        
+        .search-box { margin-bottom: 20px; }
+        .search-box input { padding: 10px; width: 300px; border: 1px solid #ddd; border-radius: 5px; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>⚙️ Admin Dashboard</h1>
+    <div class="nav-links">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/revenue">Revenue</a>
+        <a href="/admin/support">Support</a>
+        <a href="/admin/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-title">👥 All Users</div>
+
+    <div class="section">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="filterTable()">
+        </div>
+
+        {% if users %}
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Business</th>
+                        <th>Plan</th>
+                        <th>Daily Limit</th>
+                        <th>Bots</th>
+                        <th>Payments</th>
+                        <th>Total Spent</th>
+                        <th>Joined</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.name }}</strong></td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.business }}</td>
+                        <td>
+                            {% if user.plan == 'FREE' %}
+                                <span class="badge badge-free">{{ user.plan }}</span>
+                            {% elif user.plan == 'STARTER' %}
+                                <span class="badge badge-starter">{{ user.plan }}</span>
+                            {% elif user.plan == 'PRO' %}
+                                <span class="badge badge-pro">{{ user.plan }}</span>
+                            {% else %}
+                                <span class="badge badge-business">{{ user.plan }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.daily_limit }} msg/day</td>
+                        <td>{{ user.bots }}</td>
+                        <td>{{ user.payments }}</td>
+                        <td><strong>₹{{ user.total_spent | int }}</strong></td>
+                        <td>{{ user.joined }}</td>
+                        <td><a href="/admin/users/{{ user.id }}" class="action-btn">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                No users found
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('usersTable');
+    const tr = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName('td');
+        let found = false;
+        
+        for (let j = 0; j < td.length - 1; j++) {
+            if (td[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                found = true;
+                break;
+            }
+        }
+        
+        tr[i].style.display = found ? '' : 'none';
+    }
+}
+</script>
+
+</body>
+</html>

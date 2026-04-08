@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Successful - WhatsApp Bot SaaS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: white; font-size: 20px; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { padding: 30px; max-width: 550px; margin: auto; }
+        .card { background: white; border-radius: 10px; padding: 40px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; margin-top: 30px; border-top: 5px solid #25D366; }
+        .success-icon { font-size: 72px; margin-bottom: 16px; }
+        .card h2 { color: #25D366; font-size: 26px; margin-bottom: 8px; }
+        .card p { color: #888; font-size: 14px; margin-bottom: 24px; }
+        .plan-badge { display: inline-block; background: #e8f5e9; color: #25D366; padding: 8px 22px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 1px solid #25D366; margin-bottom: 24px; }
+        .info-box { background: #f8f9fa; border-radius: 8px; padding: 18px; margin-bottom: 24px; text-align: left; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #eee; }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span { color: #888; }
+        .info-row strong { color: #333; }
+        .btn { display: block; width: 100%; padding: 14px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; margin-bottom: 10px; }
+        .btn:hover { background: #128C7E; }
+        .confetti { font-size: 28px; letter-spacing: 8px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>🤖 WhatsApp Bot SaaS</h1>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="confetti">🎉🎊🎉</div>
+        <div class="success-icon">✅</div>
+        <h2>Payment Successful!</h2>
+        <p>Your plan has been activated instantly. Your bot can now serve more customers!</p>
+
+        <div class="plan-badge">
+            {{ plan.name }} Plan — ₹{{ plan.price }}/month
+        </div>
+
+        <div class="info-box">
+            <div class="info-row">
+                <span>Plan</span>
+                <strong>{{ user_plan.plan_name | upper }}</strong>
+            </div>
+            <div class="info-row">
+                <span>Daily Limit</span>
+                <strong>{{ user_plan.daily_limit }} messages/day</strong>
+            </div>
+            <div class="info-row">
+                <span>Valid Until</span>
+                <strong>
+                    {% if user_plan.expires_at %}
+                        {{ user_plan.expires_at.strftime('%d %b %Y') }}
+                    {% else %}
+                        Forever
+                    {% endif %}
+                </strong>
+            </div>
+            <div class="info-row">
+                <span>Days Remaining</span>
+                <strong>
+                    {% if user_plan.days_left is not none %}
+                        {{ user_plan.days_left }} days
+                    {% else %}
+                        Unlimited
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+
+        <a href="/" class="btn">🚀 Go to Dashboard</a>
+    </div>
+</div>
+
+</body>
+</html>
