@@ -22,7 +22,7 @@ const botConfigs   = {}
 const bookingState = {}
 
 // ─────────────────────────────────────────────
-// 🛡️ ANTI-BAN FIX 1: Random Human-like Delay
+// 🛡️ FIX 1: Random Human-like Delay
 // ─────────────────────────────────────────────
 function randomDelay(min = 3000, max = 7000) {
     const ms = Math.floor(Math.random() * (max - min + 1)) + min
@@ -30,30 +30,52 @@ function randomDelay(min = 3000, max = 7000) {
 }
 
 // ─────────────────────────────────────────────
-// 🛡️ ANTI-BAN FIX 2: Send with Typing Indicator
+// 🛡️ FIX 2: Send with Typing Indicator (sock fixed)
 // ─────────────────────────────────────────────
 async function sendWithTyping(sock, jid, text) {
     try {
-        // Step 1: Show "typing..." to customer
         await sock.sendPresenceUpdate('composing', jid)
-
-        // Step 2: Wait based on message length (realistic typing time)
         const typingTime = Math.min(text.length * 50, 4000)
         await new Promise(r => setTimeout(r, typingTime))
-
-        // Step 3: Stop typing indicator
         await sock.sendPresenceUpdate('paused', jid)
-
-        // Step 4: Random delay before sending (human feel)
         await randomDelay(2000, 5000)
-
-        // Step 5: Send message
         await sock.sendMessage(jid, { text })
-
     } catch (err) {
-        // Fallback: send directly if typing indicator fails
-        await sock.sendMessage(jid, { text })
+        try {
+            await sock.sendMessage(jid, { text })
+        } catch (e) {
+            console.error('❌ sendWithTyping failed:', e.message)
+        }
     }
+}
+
+// ─────────────────────────────────────────────
+// 🛡️ FIX 3: Message Queue — prevent simultaneous sends
+// ─────────────────────────────────────────────
+const messageQueues = {}
+
+async function queueMessage(userId, fn) {
+    if (!messageQueues[userId]) {
+        messageQueues[userId] = Promise.resolve()
+    }
+    messageQueues[userId] = messageQueues[userId].then(fn).catch(err => {
+        console.error(`❌ Queue error for ${userId}:`, err.message)
+    })
+    return messageQueues[userId]
+}
+
+// ─────────────────────────────────────────────
+// 🛡️ FIX 4: Exponential Backoff Reconnect
+// ─────────────────────────────────────────────
+const reconnectAttempts = {}
+
+function getReconnectDelay(userId) {
+    const attempts = reconnectAttempts[userId] || 0
+    // 3s → 6s → 12s → 24s → max 60s
+    const delay = Math.min(3000 * Math.pow(2, attempts), 60000)
+    reconnectAttempts[userId] = attempts + 1
+    console.log(`🔄 Reconnect attempt ${attempts + 1} for user ${userId} — waiting ${delay/1000}s`)
+    return delay
 }
 
 // ─────────────────────────────────────────────
@@ -306,16 +328,17 @@ async function startConnection(userId, botConfig = {}) {
         }
 
         if (connection === 'open') {
+            // 🛡️ FIX 4: Reset reconnect attempts on successful connect
+            reconnectAttempts[userId] = 0
+
             connections[userId] = { status: 'connected', sock, botConfig }
             qrCodes[userId]     = null
             console.log(`✅ User ${userId} connected!`)
 
-            // Notify owner
             try {
                 const ownerNumber = botConfig.whatsapp_number || ''
                 if (ownerNumber) {
                     const jid = ownerNumber.replace(/\D/g, '') + '@s.whatsapp.net'
-                    // 🛡️ ANTI-BAN: Use sendWithTyping for owner notification too
                     await sendWithTyping(sock, jid,
                         `✅ Your WhatsApp Bot is now ACTIVE!\n\n🤖 Bot: ${botConfig.bot_name || 'Your Bot'}\n🏢 Business: ${botConfig.business_name || ''}\n\nCustomers can now message you! 🚀`
                     )
@@ -333,10 +356,12 @@ async function startConnection(userId, botConfig = {}) {
 
             if (shouldReconnect) {
                 connections[userId] = { status: 'reconnecting' }
-                console.log(`🔄 Reconnecting user ${userId} in 3s...`)
-                setTimeout(() => startConnection(userId, botConfigs[userId] || botConfig), 3000)
+                // 🛡️ FIX 4: Exponential backoff instead of fixed 3s
+                const delay = getReconnectDelay(userId)
+                setTimeout(() => startConnection(userId, botConfigs[userId] || botConfig), delay)
             } else {
                 connections[userId] = { status: 'disconnected' }
+                reconnectAttempts[userId] = 0
                 console.log(`❌ User ${userId} logged out`)
             }
         }
@@ -344,147 +369,150 @@ async function startConnection(userId, botConfig = {}) {
 
     // ── INCOMING MESSAGES ──
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
-        try {
-            if (type !== 'notify') return
+        if (type !== 'notify') return
 
-            const msg = messages[0]
-            if (!msg?.message || msg.key.fromMe) return
+        const msg = messages[0]
+        if (!msg?.message || msg.key.fromMe) return
 
-            const from = msg.key.remoteJid
+        const from = msg.key.remoteJid
 
-            // ── SKIP GROUP MESSAGES ──
-            if (from.endsWith('@g.us')) {
-                console.log(`⏭️ Skipping group message from ${from}`)
-                return
-            }
+        // 🛡️ FIX 5: Skip group messages AND status/broadcast messages
+        if (from.endsWith('@g.us')) {
+            console.log(`⏭️ Skipping group message`)
+            return
+        }
+        if (from === 'status@broadcast' || from.endsWith('@broadcast')) {
+            console.log(`⏭️ Skipping broadcast/status message`)
+            return
+        }
 
-            const text = (
-                msg.message?.conversation ||
-                msg.message?.extendedTextMessage?.text ||
-                msg.message?.imageMessage?.caption || ''
-            ).trim()
+        const text = (
+            msg.message?.conversation ||
+            msg.message?.extendedTextMessage?.text ||
+            msg.message?.imageMessage?.caption || ''
+        ).trim()
 
-            if (!text) return
+        if (!text) return
 
-            console.log(`\n📨 [User ${userId}] Message from ${from}: "${text}"`)
+        console.log(`\n📨 [User ${userId}] Message from ${from}: "${text}"`)
 
-            // 🛡️ ANTI-BAN FIX 3: Mark message as READ before replying
-            await sock.readMessages([msg.key])
+        // 🛡️ FIX 3: Queue messages per user — no simultaneous processing
+        await queueMessage(userId, async () => {
+            try {
+                // 🛡️ Mark message as READ
+                await sock.readMessages([msg.key])
 
-            // 🛡️ ANTI-BAN: Small pause after reading (human behavior)
-            await randomDelay(1000, 2500)
+                // 🛡️ Small pause after reading
+                await randomDelay(1000, 2500)
 
-            // ── CHECK & INCREMENT LIMIT (DB) ──
-            const limitData = await checkAndIncrementLimit(userId)
+                // ── CHECK & INCREMENT LIMIT ──
+                const limitData = await checkAndIncrementLimit(userId)
 
-            if (!limitData.allowed) {
-                console.log(`🚫 [User ${userId}] Daily limit reached! (${limitData.count}/${limitData.limit})`)
-                await sendWithTyping(from, `⚠️ Sorry, this bot has reached its daily message limit.\n\nPlease try again tomorrow or contact the business owner to upgrade their plan.`)
-                return
-            }
-
-            console.log(`📊 [User ${userId}] Message count: ${limitData.count}/${limitData.limit} (${limitData.plan} plan)`)
-
-            // ── GET LATEST CONFIG ──
-            const config = botConfigs[userId] || {}
-
-            // ── INIT BOOKING STATE for this customer ──
-            if (!bookingState[from]) {
-                bookingState[from] = {
-                    user_id:        userId,
-                    customer_name:  null,
-                    customer_phone: null,
-                    service:        null,
-                    date_time:      null,
-                    is_booking:     false
-                }
-            }
-            const booking = bookingState[from]
-
-            // Log customer message
-            await logMessage(userId, from, booking.customer_name, text, 'customer')
-
-            const textLower       = text.toLowerCase()
-            const bookingKeywords = ['book', 'booking', 'appointment', 'reserve', 'table']
-            const isBookingIntent = bookingKeywords.some(kw => textLower.includes(kw))
-
-            // ── BOOKING FLOW ──
-            if (isBookingIntent && !booking.is_booking) {
-                booking.is_booking = true
-                const reply = `📅 Great! I'll help you book.\n\nPlease share:\n1️⃣ Your Name\n2️⃣ Service you want\n3️⃣ Preferred date & time\n4️⃣ Your phone number (10 digits)\n\nWe will confirm shortly! ✅`
-                await sendWithTyping(sock, from, reply)
-                await logMessage(userId, from, booking.customer_name, reply, 'bot')
-                return
-            }
-
-            if (booking.is_booking) {
-                if (isPhoneNumber(text) && !booking.customer_phone) {
-                    booking.customer_phone = text.trim()
-                }
-                if (isDatePattern(text) && !booking.date_time) {
-                    booking.date_time = text.trim()
-                }
-                if (!booking.service) {
-                    const extracted = await extractServiceWithAI(text, config)
-                    if (extracted) booking.service = extracted
-                }
-                if (!booking.customer_name && !isPhoneNumber(text) && !isDatePattern(text) && text.length < 50) {
-                    if (!text.includes(' at ') && !text.includes(' on ') && !text.includes('booking')) {
-                        booking.customer_name = text.trim()
-                    }
-                }
-
-                if (booking.customer_name && booking.customer_phone && booking.service && booking.date_time) {
-                    console.log(`🔍 Checking booking availability...`)
-                    const slotCheck = await checkBookingSlot(userId, booking.service, booking.date_time)
-
-                    if (!slotCheck.available) {
-                        const availableSlots = slotCheck.available_slots?.join(', ') || 'Please try a different time'
-                        const slotMsg = `❌ Sorry! This time slot (${booking.date_time}) is already booked.\n\n⏰ Available times:\n${availableSlots}\n\nPlease choose another time! 😊`
-                        await sendWithTyping(sock, from, slotMsg)
-                        await logMessage(userId, from, booking.customer_name, slotMsg, 'bot')
-
-                        booking.date_time = null
-                        const retry = `📅 Please share a different date & time.`
-                        await sendWithTyping(sock, from, retry)
-                        await logMessage(userId, from, booking.customer_name, retry, 'bot')
-                        return
-                    }
-
-                    await saveBooking(userId, {
-                        customer_name:  booking.customer_name,
-                        customer_phone: booking.customer_phone,
-                        service:        booking.service,
-                        date_time:      booking.date_time
-                    })
-
-                    const confirm = `✅ BOOKING CONFIRMED!\n\n👤 Name: ${booking.customer_name}\n🛎️ Service: ${booking.service}\n📅 Date/Time: ${booking.date_time}\n📱 Phone: ${booking.customer_phone}\n\nWe will contact you soon! Thank you! 🙏`
-                    await sendWithTyping(sock, from, confirm)
-                    await logMessage(userId, from, booking.customer_name, confirm, 'bot')
-                    delete bookingState[from]
+                if (!limitData.allowed) {
+                    console.log(`🚫 [User ${userId}] Daily limit reached!`)
+                    // 🛡️ FIX 2: sock passed correctly (was missing before!)
+                    await sendWithTyping(sock, from, `⚠️ Sorry, this bot has reached its daily message limit.\n\nPlease try again tomorrow or contact the business owner to upgrade their plan.`)
                     return
                 }
 
-                const missing = []
-                if (!booking.customer_name)  missing.push('1️⃣ Name')
-                if (!booking.service)        missing.push('2️⃣ Service')
-                if (!booking.date_time)      missing.push('3️⃣ Date & Time')
-                if (!booking.customer_phone) missing.push('4️⃣ Phone Number')
+                console.log(`📊 [User ${userId}] Message count: ${limitData.count}/${limitData.limit} (${limitData.plan} plan)`)
 
-                const progress = `Got it! Still need:\n${missing.join('\n')}\n\nPlease share the missing details.`
-                await sendWithTyping(sock, from, progress)
-                await logMessage(userId, from, booking.customer_name, progress, 'bot')
-                return
+                const config = botConfigs[userId] || {}
+
+                if (!bookingState[from]) {
+                    bookingState[from] = {
+                        user_id:        userId,
+                        customer_name:  null,
+                        customer_phone: null,
+                        service:        null,
+                        date_time:      null,
+                        is_booking:     false
+                    }
+                }
+                const booking = bookingState[from]
+
+                await logMessage(userId, from, booking.customer_name, text, 'customer')
+
+                const textLower       = text.toLowerCase()
+                const bookingKeywords = ['book', 'booking', 'appointment', 'reserve', 'table']
+                const isBookingIntent = bookingKeywords.some(kw => textLower.includes(kw))
+
+                // ── BOOKING FLOW ──
+                if (isBookingIntent && !booking.is_booking) {
+                    booking.is_booking = true
+                    const reply = `📅 Great! I'll help you book.\n\nPlease share:\n1️⃣ Your Name\n2️⃣ Service you want\n3️⃣ Preferred date & time\n4️⃣ Your phone number (10 digits)\n\nWe will confirm shortly! ✅`
+                    await sendWithTyping(sock, from, reply)
+                    await logMessage(userId, from, booking.customer_name, reply, 'bot')
+                    return
+                }
+
+                if (booking.is_booking) {
+                    if (isPhoneNumber(text) && !booking.customer_phone) {
+                        booking.customer_phone = text.trim()
+                    }
+                    if (isDatePattern(text) && !booking.date_time) {
+                        booking.date_time = text.trim()
+                    }
+                    if (!booking.service) {
+                        const extracted = await extractServiceWithAI(text, config)
+                        if (extracted) booking.service = extracted
+                    }
+                    if (!booking.customer_name && !isPhoneNumber(text) && !isDatePattern(text) && text.length < 50) {
+                        if (!text.includes(' at ') && !text.includes(' on ') && !text.includes('booking')) {
+                            booking.customer_name = text.trim()
+                        }
+                    }
+
+                    if (booking.customer_name && booking.customer_phone && booking.service && booking.date_time) {
+                        const slotCheck = await checkBookingSlot(userId, booking.service, booking.date_time)
+
+                        if (!slotCheck.available) {
+                            const availableSlots = slotCheck.available_slots?.join(', ') || 'Please try a different time'
+                            const slotMsg = `❌ Sorry! This time slot (${booking.date_time}) is already booked.\n\n⏰ Available times:\n${availableSlots}\n\nPlease choose another time! 😊`
+                            await sendWithTyping(sock, from, slotMsg)
+                            await logMessage(userId, from, booking.customer_name, slotMsg, 'bot')
+                            booking.date_time = null
+                            const retry = `📅 Please share a different date & time.`
+                            await sendWithTyping(sock, from, retry)
+                            await logMessage(userId, from, booking.customer_name, retry, 'bot')
+                            return
+                        }
+
+                        await saveBooking(userId, {
+                            customer_name:  booking.customer_name,
+                            customer_phone: booking.customer_phone,
+                            service:        booking.service,
+                            date_time:      booking.date_time
+                        })
+
+                        const confirm = `✅ BOOKING CONFIRMED!\n\n👤 Name: ${booking.customer_name}\n🛎️ Service: ${booking.service}\n📅 Date/Time: ${booking.date_time}\n📱 Phone: ${booking.customer_phone}\n\nWe will contact you soon! Thank you! 🙏`
+                        await sendWithTyping(sock, from, confirm)
+                        await logMessage(userId, from, booking.customer_name, confirm, 'bot')
+                        delete bookingState[from]
+                        return
+                    }
+
+                    const missing = []
+                    if (!booking.customer_name)  missing.push('1️⃣ Name')
+                    if (!booking.service)        missing.push('2️⃣ Service')
+                    if (!booking.date_time)      missing.push('3️⃣ Date & Time')
+                    if (!booking.customer_phone) missing.push('4️⃣ Phone Number')
+
+                    const progress = `Got it! Still need:\n${missing.join('\n')}\n\nPlease share the missing details.`
+                    await sendWithTyping(sock, from, progress)
+                    await logMessage(userId, from, booking.customer_name, progress, 'bot')
+                    return
+                }
+
+                // ── NORMAL AI REPLY ──
+                const reply = await getAIReply(text, config)
+                await sendWithTyping(sock, from, reply)
+                await logMessage(userId, from, booking.customer_name, reply, 'bot')
+
+            } catch (err) {
+                console.error('❌ Message handler error:', err.message)
             }
-
-            // ── NORMAL AI REPLY ──
-            const reply = await getAIReply(text, config)
-            await sendWithTyping(sock, from, reply)
-            await logMessage(userId, from, booking.customer_name, reply, 'bot')
-
-        } catch (err) {
-            console.error('❌ Message handler error:', err.message)
-        }
+        })
     })
 
     connections[userId] = { status: 'starting', sock, botConfig }
@@ -526,6 +554,7 @@ app.get('/disconnect/:userId', async (req, res) => {
         connections[userId] = { status: 'disconnected' }
         qrCodes[userId]     = null
         delete botConfigs[userId]
+        reconnectAttempts[userId] = 0
 
         const authFolder = path.join(__dirname, 'auth', userId.toString())
         if (fs.existsSync(authFolder)) {
