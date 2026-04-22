@@ -14,10 +14,47 @@ app.use(express.json())
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+const FLASK_URL = process.env.FLASK_URL || 'http://127.0.0.1:5000'
+
 const connections  = {}
 const qrCodes      = {}
 const botConfigs   = {}
 const bookingState = {}
+
+// ─────────────────────────────────────────────
+// 🛡️ ANTI-BAN FIX 1: Random Human-like Delay
+// ─────────────────────────────────────────────
+function randomDelay(min = 3000, max = 7000) {
+    const ms = Math.floor(Math.random() * (max - min + 1)) + min
+    return new Promise(r => setTimeout(r, ms))
+}
+
+// ─────────────────────────────────────────────
+// 🛡️ ANTI-BAN FIX 2: Send with Typing Indicator
+// ─────────────────────────────────────────────
+async function sendWithTyping(sock, jid, text) {
+    try {
+        // Step 1: Show "typing..." to customer
+        await sock.sendPresenceUpdate('composing', jid)
+
+        // Step 2: Wait based on message length (realistic typing time)
+        const typingTime = Math.min(text.length * 50, 4000)
+        await new Promise(r => setTimeout(r, typingTime))
+
+        // Step 3: Stop typing indicator
+        await sock.sendPresenceUpdate('paused', jid)
+
+        // Step 4: Random delay before sending (human feel)
+        await randomDelay(2000, 5000)
+
+        // Step 5: Send message
+        await sock.sendMessage(jid, { text })
+
+    } catch (err) {
+        // Fallback: send directly if typing indicator fails
+        await sock.sendMessage(jid, { text })
+    }
+}
 
 // ─────────────────────────────────────────────
 // AUTO-RESTORE on server start
@@ -25,7 +62,7 @@ const bookingState = {}
 async function restoreActiveBots() {
     try {
         console.log('🔄 Checking for active bots to restore...')
-        const response = await axios.get('http://127.0.0.1:5000/api/active-bots', { timeout: 5000 })
+        const response = await axios.get(`${FLASK_URL}/api/active-bots`, { timeout: 5000 })
         const bots = response.data.bots || []
 
         if (bots.length === 0) {
@@ -45,20 +82,40 @@ async function restoreActiveBots() {
 }
 
 // ─────────────────────────────────────────────
-// CHECK LIMIT via Flask DB (single source of truth)
-// Returns: { allowed: true/false, count, limit }
-// Also increments count in DB when allowed
+// CHECK & INCREMENT LIMIT via Flask DB
 // ─────────────────────────────────────────────
 async function checkAndIncrementLimit(userId) {
     try {
-        const res = await axios.get(
-            `http://127.0.0.1:5000/api/check-limit/${userId}`,
+        const res = await axios.post(
+            `${FLASK_URL}/api/check-limit/${userId}`,
+            {},
             { timeout: 3000 }
         )
-        return res.data   // { allowed, count, limit, plan, message? }
+        return res.data
     } catch (err) {
         console.log('⚠️ Limit check failed — allowing by default:', err.message)
         return { allowed: true, count: 0, limit: 999 }
+    }
+}
+
+// ─────────────────────────────────────────────
+// CHECK BOOKING SLOT AVAILABILITY
+// ─────────────────────────────────────────────
+async function checkBookingSlot(userId, service, dateTime) {
+    try {
+        console.log(`🔍 Checking slot: ${service} at ${dateTime}`)
+        const response = await axios.get(
+            `${FLASK_URL}/api/check-booking-slot/${userId}`,
+            {
+                params: { service, date_time: dateTime },
+                timeout: 5000
+            }
+        )
+        console.log(`✅ Slot check result:`, response.data)
+        return response.data
+    } catch (err) {
+        console.error('❌ Slot check failed:', err.message)
+        return { available: true }
     }
 }
 
@@ -116,7 +173,7 @@ Return ONLY the service name or "NOT_FOUND", nothing else.`
 // ─────────────────────────────────────────────
 async function logMessage(userId, customerPhone, customerName, messageText, sender) {
     try {
-        await axios.post(`http://127.0.0.1:5000/api/log-message/${userId}`, {
+        await axios.post(`${FLASK_URL}/api/log-message/${userId}`, {
             customer_phone: customerPhone,
             customer_name:  customerName,
             message_text:   messageText,
@@ -133,7 +190,7 @@ async function logMessage(userId, customerPhone, customerName, messageText, send
 async function saveBooking(userId, bookingData) {
     try {
         const response = await axios.post(
-            `http://127.0.0.1:5000/api/save-booking/${userId}`,
+            `${FLASK_URL}/api/save-booking/${userId}`,
             bookingData,
             { timeout: 5000 }
         )
@@ -157,6 +214,9 @@ BUSINESS DETAILS:
 - Welcome Message: ${botConfig.welcome_message || ''}
 - Address: ${botConfig.address || 'Not provided'}
 - Timings: ${botConfig.timings || 'Not provided'}
+- Contact Phone: ${botConfig.contact_phone || 'Not provided'}
+- Contact Email: ${botConfig.contact_email || 'Not provided'}
+- Website: ${botConfig.website || 'Not provided'}
 - Extra Info: ${botConfig.extra_info || ''}
 
 SERVICES/PRODUCTS AVAILABLE:
@@ -182,7 +242,7 @@ How can I help you today? Type:
 2. SERVICES or menu → List ALL services with prices clearly formatted
 3. INFO → Show address and timings in a clean format
 4. BOOK → Guide them to start the booking process
-5. Any natural question (e.g. "do you have parking?", "what are your timings?") → Answer helpfully using business info above
+5. Any natural question → Answer helpfully using business info above
 6. If you don't know the answer → Say: "For more details, please contact us directly — we're happy to help! 😊"
 7. Always reply in the SAME language the customer uses (Tamil, English, Hindi etc.)
 8. Never make up services, prices or information not listed above
@@ -255,9 +315,10 @@ async function startConnection(userId, botConfig = {}) {
                 const ownerNumber = botConfig.whatsapp_number || ''
                 if (ownerNumber) {
                     const jid = ownerNumber.replace(/\D/g, '') + '@s.whatsapp.net'
-                    await sock.sendMessage(jid, {
-                        text: `✅ Your WhatsApp Bot is now ACTIVE!\n\n🤖 Bot: ${botConfig.bot_name || 'Your Bot'}\n🏢 Business: ${botConfig.business_name || ''}\n\nCustomers can now message you! 🚀`
-                    })
+                    // 🛡️ ANTI-BAN: Use sendWithTyping for owner notification too
+                    await sendWithTyping(sock, jid,
+                        `✅ Your WhatsApp Bot is now ACTIVE!\n\n🤖 Bot: ${botConfig.bot_name || 'Your Bot'}\n🏢 Business: ${botConfig.business_name || ''}\n\nCustomers can now message you! 🚀`
+                    )
                 }
             } catch (err) {
                 console.error('Owner notification error:', err.message)
@@ -291,7 +352,7 @@ async function startConnection(userId, botConfig = {}) {
 
             const from = msg.key.remoteJid
 
-            // ── SKIP GROUP MESSAGES (don't waste count) ──
+            // ── SKIP GROUP MESSAGES ──
             if (from.endsWith('@g.us')) {
                 console.log(`⏭️ Skipping group message from ${from}`)
                 return
@@ -307,14 +368,18 @@ async function startConnection(userId, botConfig = {}) {
 
             console.log(`\n📨 [User ${userId}] Message from ${from}: "${text}"`)
 
+            // 🛡️ ANTI-BAN FIX 3: Mark message as READ before replying
+            await sock.readMessages([msg.key])
+
+            // 🛡️ ANTI-BAN: Small pause after reading (human behavior)
+            await randomDelay(1000, 2500)
+
             // ── CHECK & INCREMENT LIMIT (DB) ──
             const limitData = await checkAndIncrementLimit(userId)
 
             if (!limitData.allowed) {
                 console.log(`🚫 [User ${userId}] Daily limit reached! (${limitData.count}/${limitData.limit})`)
-                await sock.sendMessage(from, {
-                    text: `⚠️ Sorry, this bot has reached its daily message limit.\n\nPlease try again tomorrow or contact the business owner to upgrade their plan.`
-                })
+                await sendWithTyping(from, `⚠️ Sorry, this bot has reached its daily message limit.\n\nPlease try again tomorrow or contact the business owner to upgrade their plan.`)
                 return
             }
 
@@ -347,13 +412,12 @@ async function startConnection(userId, botConfig = {}) {
             if (isBookingIntent && !booking.is_booking) {
                 booking.is_booking = true
                 const reply = `📅 Great! I'll help you book.\n\nPlease share:\n1️⃣ Your Name\n2️⃣ Service you want\n3️⃣ Preferred date & time\n4️⃣ Your phone number (10 digits)\n\nWe will confirm shortly! ✅`
-                await sock.sendMessage(from, { text: reply })
+                await sendWithTyping(sock, from, reply)
                 await logMessage(userId, from, booking.customer_name, reply, 'bot')
                 return
             }
 
             if (booking.is_booking) {
-                // Collect booking details
                 if (isPhoneNumber(text) && !booking.customer_phone) {
                     booking.customer_phone = text.trim()
                 }
@@ -370,8 +434,23 @@ async function startConnection(userId, botConfig = {}) {
                     }
                 }
 
-                // All details collected → save booking
                 if (booking.customer_name && booking.customer_phone && booking.service && booking.date_time) {
+                    console.log(`🔍 Checking booking availability...`)
+                    const slotCheck = await checkBookingSlot(userId, booking.service, booking.date_time)
+
+                    if (!slotCheck.available) {
+                        const availableSlots = slotCheck.available_slots?.join(', ') || 'Please try a different time'
+                        const slotMsg = `❌ Sorry! This time slot (${booking.date_time}) is already booked.\n\n⏰ Available times:\n${availableSlots}\n\nPlease choose another time! 😊`
+                        await sendWithTyping(sock, from, slotMsg)
+                        await logMessage(userId, from, booking.customer_name, slotMsg, 'bot')
+
+                        booking.date_time = null
+                        const retry = `📅 Please share a different date & time.`
+                        await sendWithTyping(sock, from, retry)
+                        await logMessage(userId, from, booking.customer_name, retry, 'bot')
+                        return
+                    }
+
                     await saveBooking(userId, {
                         customer_name:  booking.customer_name,
                         customer_phone: booking.customer_phone,
@@ -380,13 +459,12 @@ async function startConnection(userId, botConfig = {}) {
                     })
 
                     const confirm = `✅ BOOKING CONFIRMED!\n\n👤 Name: ${booking.customer_name}\n🛎️ Service: ${booking.service}\n📅 Date/Time: ${booking.date_time}\n📱 Phone: ${booking.customer_phone}\n\nWe will contact you soon! Thank you! 🙏`
-                    await sock.sendMessage(from, { text: confirm })
+                    await sendWithTyping(sock, from, confirm)
                     await logMessage(userId, from, booking.customer_name, confirm, 'bot')
                     delete bookingState[from]
                     return
                 }
 
-                // Missing details → ask again
                 const missing = []
                 if (!booking.customer_name)  missing.push('1️⃣ Name')
                 if (!booking.service)        missing.push('2️⃣ Service')
@@ -394,14 +472,14 @@ async function startConnection(userId, botConfig = {}) {
                 if (!booking.customer_phone) missing.push('4️⃣ Phone Number')
 
                 const progress = `Got it! Still need:\n${missing.join('\n')}\n\nPlease share the missing details.`
-                await sock.sendMessage(from, { text: progress })
+                await sendWithTyping(sock, from, progress)
                 await logMessage(userId, from, booking.customer_name, progress, 'bot')
                 return
             }
 
-            // ── NORMAL AI REPLY (Friendly + Professional) ──
+            // ── NORMAL AI REPLY ──
             const reply = await getAIReply(text, config)
-            await sock.sendMessage(from, { text: reply })
+            await sendWithTyping(sock, from, reply)
             await logMessage(userId, from, booking.customer_name, reply, 'bot')
 
         } catch (err) {
@@ -449,7 +527,6 @@ app.get('/disconnect/:userId', async (req, res) => {
         qrCodes[userId]     = null
         delete botConfigs[userId]
 
-        // Delete auth so fresh QR on reconnect
         const authFolder = path.join(__dirname, 'auth', userId.toString())
         if (fs.existsSync(authFolder)) {
             fs.rmSync(authFolder, { recursive: true, force: true })
@@ -467,7 +544,8 @@ app.get('/disconnect/:userId', async (req, res) => {
 // ─────────────────────────────────────────────
 // START SERVER
 // ─────────────────────────────────────────────
-app.listen(3000, async () => {
-    console.log('🚀 Baileys service running on port 3000')
+const PORT = process.env.PORT || 3000
+app.listen(PORT, async () => {
+    console.log(`🚀 Baileys service running on port ${PORT}`)
     setTimeout(restoreActiveBots, 3000)
 })
