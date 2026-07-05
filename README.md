@@ -44,7 +44,7 @@
 
 ## 🚀 Live Demo
 
-👉 **[botify-production-0ee6.up.railway.app/login](https://botify-production-0ee6.up.railway.app/login)**
+👉 **https://web-production-10039.up.railway.app/login?next=%2F**
 
 ---
 
