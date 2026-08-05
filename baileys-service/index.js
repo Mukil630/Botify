@@ -34,10 +34,10 @@ function randomDelay(min = 3000, max = 7000) {
 // ─────────────────────────────────────────────
 async function sendWithTyping(sock, jid, text) {
     try {
-        await sock.sendPresenceUpdate('composing', jid)
+        sock.sendPresenceUpdate('composing', jid).catch(e => {});
         const typingTime = Math.min(text.length * 50, 4000)
         await new Promise(r => setTimeout(r, typingTime))
-        await sock.sendPresenceUpdate('paused', jid)
+        sock.sendPresenceUpdate('paused', jid).catch(e => {});
         await randomDelay(2000, 5000)
         await sock.sendMessage(jid, { text })
     } catch (err) {
@@ -229,7 +229,7 @@ async function saveBooking(userId, bookingData) {
 // ─────────────────────────────────────────────
 async function getAIReply(userMessage, botConfig) {
     try {
-        const systemPrompt = `You are a friendly and professional WhatsApp assistant for ${botConfig.business_name || 'this business'}.
+        let systemPrompt = `You are a friendly and professional WhatsApp assistant for ${botConfig.business_name || 'this business'}.
 
 BUSINESS DETAILS:
 - Business Name: ${botConfig.business_name || ''}
@@ -269,6 +269,10 @@ How can I help you today? Type:
 7. Always reply in the SAME language the customer uses (Tamil, English, Hindi etc.)
 8. Never make up services, prices or information not listed above
 9. Never mention you are an AI — just be a helpful business assistant`
+
+        if (botConfig.custom_prompt) {
+            systemPrompt += `\n\nCUSTOM INSTRUCTIONS / PERSONALITY DIRECTIONS FROM OWNER:\n${botConfig.custom_prompt}\n(Follow the above instructions carefully. Override normal personality rules if instructed, but maintain standard menu/booking formats if required.)`
+        }
 
         const completion = await groq.chat.completions.create({
             messages: [
@@ -376,13 +380,9 @@ async function startConnection(userId, botConfig = {}) {
 
         const from = msg.key.remoteJid
 
-        // 🛡️ FIX 5: Skip group messages AND status/broadcast messages
-        if (from.endsWith('@g.us')) {
-            console.log(`⏭️ Skipping group message`)
-            return
-        }
-        if (from === 'status@broadcast' || from.endsWith('@broadcast')) {
-            console.log(`⏭️ Skipping broadcast/status message`)
+        // 🛡️ FIX 5: Skip group, status, broadcast, and newsletter messages
+        if (from.endsWith('@g.us') || from.endsWith('@newsletter') || from === 'status@broadcast' || from.endsWith('@broadcast')) {
+            console.log(`⏭️ Skipping group/newsletter/broadcast message from ${from}`)
             return
         }
 
@@ -505,9 +505,14 @@ async function startConnection(userId, botConfig = {}) {
                 }
 
                 // ── NORMAL AI REPLY ──
+                console.log(`🤖 Generating AI reply for user ${userId}...`)
                 const reply = await getAIReply(text, config)
+                console.log(`🤖 AI reply generated: "${reply}"`)
+                console.log(`✉️ Sending reply to WhatsApp...`)
                 await sendWithTyping(sock, from, reply)
+                console.log(`✉️ Reply sent! Logging message...`)
                 await logMessage(userId, from, booking.customer_name, reply, 'bot')
+                console.log(`✅ Message cycle complete!`)
 
             } catch (err) {
                 console.error('❌ Message handler error:', err.message)

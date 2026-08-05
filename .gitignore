@@ -13,3 +13,4 @@ baileys-service/.env
 # OS
 .DS_Store
 Thumbs.db
+*.log

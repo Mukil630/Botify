@@ -1,449 +1,1432 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Botify</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --green: #00c896;
-            --green-dark: #00a07a;
-            --bg: #0a0f1e;
-            --card: #111827;
-            --card2: #0d1526;
-            --border: #1f2937;
-            --text: #e5e7eb;
-            --muted: #6b7280;
-            --red: #ef4444;
-            --yellow: #f59e0b;
+            --primary: #25D366;
+            --primary-hover: #20ba59;
+            --secondary: #128C7E;
+            --bg-dark: #0B141A;
+            --panel-bg: rgba(17, 27, 33, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.05);
+            --border-hover: rgba(37, 211, 102, 0.35);
+            --text-main: #f0f2f5;
+            --text-muted: #8696a0;
+            --text-light: #667781;
+            --red: #ea0038;
+            --yellow: #e2a300;
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glowing Background Elements */
+        .bg-glow-1 {
+            position: absolute;
+            top: 5%;
+            right: -10%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(37, 211, 102, 0.05) 0%, rgba(37, 211, 102, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            bottom: 10%;
+            left: -10%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(18, 140, 126, 0.04) 0%, rgba(18, 140, 126, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
 
         /* ── NAVBAR ── */
         .navbar {
-            background: rgba(17,24,39,0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 28px;
+            background-color: #111b21;
+            border-bottom: 1px solid var(--panel-border);
+            padding: 0 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 56px;
+            height: 64px;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
         }
-        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; display: flex; align-items: center; gap: 8px; }
-        .navbar-brand span { color: var(--green); }
-        .navbar-right { display: flex; align-items: center; gap: 16px; }
-        .navbar-right a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: color .2s; }
-        .navbar-right a:hover { color: var(--text); }
-        .logout-btn { background: rgba(239,68,68,0.1); color: #ef4444 !important; border: 1px solid rgba(239,68,68,0.2); padding: 5px 14px; border-radius: 8px; font-size: 12px !important; }
 
-        /* ── MESSAGE COUNT BAR ── */
-        .count-bar {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 28px;
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-icon-wrapper {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .navbar-middle {
             display: flex;
             align-items: center;
             gap: 20px;
-            flex-wrap: wrap;
+            flex: 1;
+            max-width: 480px;
+            margin: 0 40px;
         }
-        .count-bar-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
-        .count-track { flex: 1; min-width: 180px; max-width: 320px; background: var(--border); border-radius: 999px; height: 8px; overflow: hidden; }
-        .count-fill { height: 100%; border-radius: 999px; transition: width .6s ease; background: var(--green); }
-        .count-fill.warn { background: var(--yellow); }
-        .count-fill.danger { background: var(--red); }
-        .count-numbers { font-size: 13px; font-weight: 600; white-space: nowrap; }
-        .count-numbers .sep { color: var(--muted); margin: 0 3px; }
-        .count-numbers .total { color: var(--muted); }
-        .count-plan-badge {
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .5px; padding: 3px 10px; border-radius: 999px;
-            background: rgba(0,200,150,0.12); color: var(--green); border: 1px solid rgba(0,200,150,0.25);
+
+        .progress-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
-        .count-plan-badge.free { background: rgba(107,114,128,0.15); color: var(--muted); border-color: var(--border); }
+
+        .progress-track {
+            flex: 1;
+            background-color: #202c33;
+            border-radius: 999px;
+            height: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background-color: var(--primary);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-fill.warn { background-color: var(--yellow); }
+        .progress-fill.danger { background-color: var(--red); }
+
+        .progress-numbers {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        .progress-numbers .sep { color: var(--text-light); margin: 0 2px; }
+        .progress-numbers .total { color: var(--text-muted); }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .plan-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            background: rgba(37, 211, 102, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+        }
+
+        .plan-badge.free {
+            background: rgba(134, 150, 160, 0.1);
+            color: var(--text-muted);
+            border-color: rgba(134, 150, 160, 0.2);
+        }
+
+        .btn-upgrade-nav {
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.15);
+            transition: all 0.2s;
+        }
+
+        .btn-upgrade-nav:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 211, 102, 0.25);
+        }
+
+        .user-name-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .btn-logout {
+            background-color: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        /* ── MAX LIMIT CRITICAL WARNING BAR ── */
         .max-reached-bar {
-            background: rgba(239,68,68,0.08);
-            border-bottom: 1px solid rgba(239,68,68,0.2);
-            padding: 8px 28px;
+            background-color: rgba(239, 68, 68, 0.12);
+            border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 10px 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            animation: slideDown 0.4s ease-out;
         }
-        .max-reached-bar p { font-size: 13px; color: #ef4444; font-weight: 500; }
-        .max-reached-bar a { font-size: 12px; font-weight: 700; color: var(--green); text-decoration: none; white-space: nowrap; padding: 5px 14px; border: 1px solid var(--green); border-radius: 8px; transition: background .2s; }
-        .max-reached-bar a:hover { background: rgba(0,200,150,0.1); }
+
+        .max-reached-bar p {
+            font-size: 13px;
+            color: #ff5252;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .max-reached-bar a {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 5px 12px;
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            background-color: rgba(37, 211, 102, 0.05);
+            transition: all 0.2s;
+        }
+
+        .max-reached-bar a:hover {
+            background-color: var(--primary);
+            color: black;
+        }
 
         /* ── CONTAINER ── */
-        .container { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
-
-        /* ── FLASH ── */
-        .flash { padding: 10px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
-        .flash.success { background: rgba(0,200,150,0.1); color: var(--green); border: 1px solid rgba(0,200,150,0.2); }
-        .flash.error { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-
-        /* ── WELCOME CARD ── */
-        .welcome-card {
-            background: linear-gradient(135deg, #111827 0%, #0d1a2d 100%);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 22px 24px;
-            margin-bottom: 24px;
+        .container {
+            max-width: 1140px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 32px 24px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 24px;
         }
-        .welcome-card h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-        .welcome-card p { font-size: 13px; color: var(--muted); }
-        .plan-chip {
-            background: rgba(0,200,150,0.08);
-            border: 1px solid rgba(0,200,150,0.2);
-            border-radius: 12px;
-            padding: 12px 20px;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .plan-chip .plan-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--green); }
-        .plan-chip .plan-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .plan-chip a { display: block; font-size: 11px; color: var(--green); text-decoration: none; margin-top: 6px; opacity: .8; }
-        .plan-chip a:hover { opacity: 1; }
 
-        /* ── QUICK ACTIONS ── */
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
-        .quick-btn {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 10px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 600;
-            transition: all .2s;
-        }
-        .quick-btn:hover { border-color: var(--green); background: rgba(0,200,150,0.05); color: var(--green); }
-        .quick-btn span { display: block; font-size: 22px; margin-bottom: 5px; }
-
-        /* ── SECTION HEADER ── */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-        .section-header h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: #fff; }
-        .section-header .bot-meta { font-size: 12px; color: var(--muted); }
-
-        /* ── BOT CARD ── */
-        .bot-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 18px 20px;
-            margin-bottom: 12px;
+        /* ── FLASH MESSAGES ── */
+        .flash {
+            padding: 14px 20px;
+            border-radius: var(--radius-lg);
+            font-size: 13.5px;
+            font-weight: 500;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 16px;
-            transition: border-color .2s;
+            gap: 10px;
         }
-        .bot-card:hover { border-color: rgba(0,200,150,0.3); }
-        .bot-card.maxed { border-color: rgba(239,68,68,0.3); }
-        .bot-info h4 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        .bot-info p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-        .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(0,200,150,0.1); color: var(--green); border: 1px solid rgba(0,200,150,0.2); margin-right: 4px; }
-        .badge-red { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.2); }
-        .bot-actions { text-align: right; min-width: 140px; }
-        .status-active { color: var(--green); font-size: 12px; font-weight: 600; margin-bottom: 8px; }
-        .status-inactive { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
-        .max-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px; }
 
-        /* ── BUTTONS ── */
-        .btn { background: var(--green); color: #000; padding: 8px 18px; border: none; border-radius: 9px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block; transition: background .2s; }
-        .btn:hover { background: var(--green-dark); }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
-        .btn-disconnect { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); padding: 6px 14px; border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-block; text-decoration: none; transition: background .2s; }
-        .btn-disconnect:hover { background: rgba(239,68,68,0.2); }
-        .btn-secondary { background: rgba(0,200,150,0.1); color: var(--green); border: 1px solid rgba(0,200,150,0.25); padding: 7px 14px; border-radius: 9px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; transition: background .2s; }
-        .btn-secondary:hover { background: rgba(0,200,150,0.2); }
-        .btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 4px 10px; border-radius: 6px; font-size: 11px; text-decoration: none; display: inline-block; }
-        .btn-upgrade { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-block; }
+        .flash.success {
+            background-color: rgba(37, 211, 102, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+        }
 
-        /* ── GRID ── */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
-        .card h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .flash.error {
+            background-color: rgba(239, 68, 68, 0.08);
+            color: #ff5252;
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
 
-        /* ── SERVICE / INFO ITEMS ── */
-        .service-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .service-item:last-child { border-bottom: none; }
-        .service-name { font-size: 13px; font-weight: 600; color: var(--text); }
-        .service-price { font-size: 13px; font-weight: 700; color: var(--green); }
-        .service-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .info-item { font-size: 13px; color: var(--muted); padding: 7px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
-        .info-item:last-child { border-bottom: none; }
-
-        /* ── BOOKINGS ── */
-        .booking-item { padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
-        .booking-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
-        .booking-detail { font-size: 12px; color: var(--muted); }
-
-        /* ── EMPTY ── */
-        .empty { text-align: center; color: var(--muted); padding: 20px; font-size: 13px; }
-        .empty a { color: var(--green); text-decoration: none; font-weight: 600; }
+        .flash.warning {
+            background-color: rgba(245, 158, 11, 0.08);
+            color: var(--yellow);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
 
         /* ── PENDING PAYMENT BANNER ── */
         .pending-banner {
-            background: rgba(245,158,11,0.08);
-            border: 1px solid rgba(245,158,11,0.25);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            background-color: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: var(--radius-lg);
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
+        }
+
+        .pending-banner p {
+            font-size: 13.5px;
+            color: #ffa726;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pending-banner a {
+            font-size: 12px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .pending-banner a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── HERO WELCOME SECTION ── */
+        .hero-welcome-card {
+            background: linear-gradient(135deg, #111b21 0%, #0d171c 100%);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-xl);
+            padding: 36px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .hero-left {
+            z-index: 10;
+            max-width: 60%;
+        }
+
+        .hero-left h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .hero-left h2 span {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-business-meta {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .pending-banner p { font-size: 13px; color: var(--yellow); }
-        .pending-banner a { font-size: 12px; color: var(--muted); text-decoration: none; }
 
-        @media (max-width: 640px) {
-            .quick-actions { grid-template-columns: repeat(2, 1fr); }
-            .grid { grid-template-columns: 1fr; }
-            .count-bar { gap: 10px; }
-            .count-track { min-width: 120px; }
-            .welcome-card { flex-direction: column; align-items: flex-start; }
+        .hero-business-meta strong {
+            color: var(--text-main);
+        }
+
+        .meta-divider {
+            color: var(--text-light);
+        }
+
+        .hero-right {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-illustration {
+            width: 200px;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-glow-blob {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(37, 211, 102, 0.15) 0%, rgba(37, 211, 102, 0) 70%);
+            z-index: -1;
+            animation: float 6s ease-in-out infinite alternate;
+        }
+
+        /* ── FEATURE CARDS GRID ── */
+        .feature-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .quick-action-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+            background-color: rgba(17, 27, 33, 0.95);
+        }
+
+        .quick-card-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .quick-icon-box {
+            width: 44px;
+            height: 44px;
+            background-color: rgba(37, 211, 102, 0.08);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .quick-action-card:hover .quick-icon-box {
+            transform: scale(1.1);
+            animation: float 2s ease-in-out infinite alternate;
+        }
+
+        .quick-text-box h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .quick-text-box span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .quick-arrow {
+            color: var(--text-light);
+            transition: transform 0.3s;
+        }
+
+        .quick-action-card:hover .quick-arrow {
+            transform: translateX(4px);
+            color: var(--primary);
+        }
+
+        /* ── SECTION HEADER ── */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .section-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .section-header-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .section-header-meta a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .section-header-meta a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── BOTS CONTAINER ── */
+        .bots-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .bot-card {
+            background-color: #111b21;
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .bot-card:hover {
+            border-color: rgba(37, 211, 102, 0.25);
+            box-shadow: var(--shadow-md);
+        }
+
+        .bot-card.maxed {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .bot-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bot-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bot-title-row h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bot-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            background-color: rgba(37, 211, 102, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+        }
+
+        .bot-badge-red {
+            background-color: rgba(239, 68, 68, 0.08);
+            color: #ff5252;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        .bot-welcome-txt {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .bot-features-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .feature-pill {
+            background-color: #202c33;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .bot-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-badge.active { color: var(--primary); }
+        .status-badge.inactive { color: var(--text-light); }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-badge.active .status-dot {
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        .status-badge.inactive .status-dot {
+            background-color: var(--text-light);
+        }
+
+        .btn-action-bot {
+            background-color: var(--primary);
+            color: black;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-action-bot:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.02);
+        }
+
+        .btn-disconnect-bot {
+            background-color: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-disconnect-bot:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        /* ── CENTERED EMPTY STATES ── */
+        .empty-state-panel {
+            background-color: #111b21;
+            border: 1px dashed var(--panel-border);
+            border-radius: var(--radius-xl);
+            padding: 48px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .empty-illustration-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .robot-floating-svg {
+            animation: float 4s ease-in-out infinite alternate;
+        }
+
+        .empty-state-panel h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .empty-state-panel p {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 320px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        /* ── SERVICES + INFO GRID ── */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-card {
+            background-color: #111b21;
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 16px;
+        }
+
+        .card-title-row h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-card-header {
+            text-decoration: none;
+            background-color: rgba(37, 211, 102, 0.08);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        .btn-card-header:hover {
+            background-color: var(--primary);
+            color: black;
+        }
+
+        /* Services List */
+        .services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .service-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .service-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .service-left h4 {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .service-left p {
+            font-size: 11.5px;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        .service-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .service-price-tag {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn-delete-service {
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 11px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .btn-delete-service:hover {
+            opacity: 1;
+        }
+
+        /* Info list */
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row i {
+            color: var(--primary);
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ── BOOKINGS CARD ── */
+        .bookings-card {
+            background-color: #111b21;
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .booking-row {
+            padding: 14px 18px;
+            background-color: rgba(255,255,255,0.01);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-left-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .booking-left-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .booking-left-info p span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .booking-status-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background-color: rgba(37, 211, 102, 0.08);
+            color: var(--primary);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+
+        @keyframes pulse-logo {
+            0% { filter: drop-shadow(0 0 2px rgba(37, 211, 102, 0.2)); }
+            100% { filter: drop-shadow(0 0 12px rgba(37, 211, 102, 0.6)); }
+        }
+
+        /* Responsive Layout styles */
+        @media (max-width: 1024px) {
+            .feature-cards-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 16px;
+            }
+            .navbar-middle {
+                display: none; /* Hide progress bar on mobile header */
+            }
+            .container {
+                padding: 20px 16px;
+            }
+            .hero-welcome-card {
+                padding: 24px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 24px;
+            }
+            .hero-left {
+                max-width: 100%;
+            }
+            .hero-right {
+                width: 100%;
+                justify-content: center;
+            }
+            .feature-cards-row {
+                grid-template-columns: 1fr;
+            }
+            .bot-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            .bot-right {
+                width: 100%;
+                text-align: left;
+                align-items: flex-start;
+            }
+            .booking-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .booking-status-tag {
+                align-self: flex-start;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="navbar-brand">🤖 <span>Botify</span></div>
-        <div class="navbar-right">
-            <span style="font-size:13px;color:var(--muted);">{{ user.name }}</span>
-            <a href="/logout" class="logout-btn">Logout</a>
-        </div>
-    </div>
+    <!-- Ambient glowing backgrounds -->
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
 
-    <!-- ✅ MAX LIMIT WARNING BAR (server-rendered, refreshed by JS) -->
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="#" class="navbar-left">
+            <div class="logo-icon-wrapper">
+                <i data-lucide="bot"></i>
+            </div>
+            <span>Botify</span>
+        </a>
+
+        <!-- Messages count progress bar -->
+        {% set pct = ((today_count / plan.daily_limit) * 100) | int if plan.daily_limit > 0 else 0 %}
+        <div class="navbar-middle">
+            <span class="progress-label">Today's Usage</span>
+            <div class="progress-track">
+                <div id="countFill" class="progress-fill {% if pct >= 100 %}danger{% elif pct >= 70 %}warn{% endif %}" style="width: {{ [pct, 100] | min }}%;"></div>
+            </div>
+            <div class="progress-numbers">
+                <span id="countUsed" style="color:{% if pct >= 100 %}#ff5252{% elif pct >= 70 %}#ffa726{% else %}#f0f2f5{% endif %};">{{ today_count }}</span>
+                <span class="sep">/</span>
+                <span id="countTotal" class="total">{{ plan.daily_limit }}</span>
+            </div>
+        </div>
+
+        <div class="navbar-right">
+            <!-- Current plan badge -->
+            <span class="plan-badge {{ 'free' if plan.plan_name == 'free' else '' }}" id="planBadge">
+                {{ plan.plan_name | upper }}
+            </span>
+
+            {% if plan.plan_name == 'free' %}
+            <a href="/upgrade" class="btn-upgrade-nav">Upgrade</a>
+            {% endif %}
+
+            <!-- Dynamic UserName -->
+            <span class="user-name-display">{{ user.name }}</span>
+            
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </header>
+
+    <!-- MAX LIMIT WARNING BAR -->
     <div id="maxReachedBar" style="display:{% if today_count >= plan.daily_limit %}flex{% else %}none{% endif %};" class="max-reached-bar">
-        <p>🚫 Daily message limit reached! Your bot cannot reply until tomorrow or you upgrade.</p>
+        <p>
+            <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
+            <span>Daily message limit reached! Your bot cannot reply until tomorrow or you upgrade your plan.</span>
+        </p>
         <a href="/upgrade">⚡ Upgrade Now</a>
     </div>
 
-    <!-- MESSAGE COUNT BAR -->
-    {% set pct = ((today_count / plan.daily_limit) * 100) | int if plan.daily_limit > 0 else 0 %}
-    <div class="count-bar">
-        <span class="count-bar-label">Today's Messages</span>
-        <div class="count-track">
-            <!-- ✅ id added so JS can update width live -->
-            <div id="countFill" class="count-fill {% if pct >= 100 %}danger{% elif pct >= 70 %}warn{% endif %}" style="width: {{ [pct, 100] | min }}%;"></div>
-        </div>
-        <div class="count-numbers">
-            <!-- ✅ ids added so JS can update numbers live -->
-            <span id="countUsed" class="used" style="color:{% if pct >= 100 %}#ef4444{% elif pct >= 70 %}#f59e0b{% else %}#e5e7eb{% endif %};">{{ today_count }}</span>
-            <span class="sep">/</span>
-            <span id="countTotal" class="total">{{ plan.daily_limit }}</span>
-        </div>
-        <span class="count-plan-badge {{ 'free' if plan.plan_name == 'free' else '' }}" id="planBadge">
-            {{ plan.plan_name | upper }}
-        </span>
-        {% if plan.days_left is not none %}
-        <span style="font-size:12px;color:var(--yellow);">⏳ {{ plan.days_left }} days left</span>
-        {% endif %}
-        {% if plan.plan_name == 'free' %}
-        <a href="/upgrade" style="font-size:12px;color:var(--green);text-decoration:none;font-weight:600;white-space:nowrap;">⚡ Upgrade →</a>
-        {% endif %}
-    </div>
-
     <!-- CONTAINER -->
-    <div class="container">
+    <main class="container">
+        
+        <!-- FLASH MESSAGES -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, msg in messages %}
-                    <div class="flash {{ category if category in ['success','error'] else 'success' }}">{{ msg }}</div>
+                    <div class="flash {{ category if category in ['success','error'] else 'success' }}">
+                        <i data-lucide="info" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                        <span>{{ msg }}</span>
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <!-- ✅ PENDING PAYMENT NOTICE — shown if user paid but admin not approved yet -->
-        {% set latest_payment = namespace(status='none') %}
-        <!-- This is handled via JS polling /api/payment-status -->
+        <!-- PENDING PAYMENT BANNER -->
         <div id="pendingPaymentBanner" class="pending-banner" style="display:none;">
-            <p>⏳ Your payment is under review. Plan will activate once admin approves (usually within 1 hour).</p>
-            <a href="#" onclick="checkPaymentStatus()">Refresh status</a>
+            <p>
+                <i data-lucide="clock" style="width: 18px; height: 18px; color: #ffa726;"></i>
+                <span>Your payment is under review. Plan will activate once approved by the admin.</span>
+            </p>
+            <a href="#" onclick="checkPaymentStatus()">Refresh Status</a>
         </div>
 
-        <!-- WELCOME -->
-        <div class="welcome-card">
-            <div>
-                <h2>Welcome, {{ user.name }}! 👋</h2>
-                <p>Business: <strong style="color:var(--text);">{{ user.business_name or 'Not set' }}</strong> &nbsp;|&nbsp; WhatsApp: {{ user.whatsapp_number or 'Not set' }}</p>
+        <!-- HERO WELCOME SECTION -->
+        <section class="hero-welcome-card">
+            <div class="hero-left">
+                <h2>👋 Welcome back, <span>{{ user.name }}</span>!</h2>
+                <div class="hero-business-meta">
+                    <span>Business: <strong>{{ user.business_name or 'Not set' }}</strong></span>
+                    <span class="meta-divider">|</span>
+                    <span>WhatsApp: <strong>{{ user.whatsapp_number or 'Not set' }}</strong></span>
+                </div>
             </div>
-            <div class="plan-chip">
-                <div class="plan-name">{{ plan.plan_name | title }} Plan</div>
-                <!-- ✅ id added so JS can refresh live -->
-                <div class="plan-sub" id="planSubText">{{ bot_count }}/{{ bot_limit }} bots &nbsp;·&nbsp; {{ today_count }}/{{ plan.daily_limit }} msgs today</div>
-                {% if plan.plan_name != 'pro' and plan.plan_name != 'business' %}
-                <a href="/upgrade">Upgrade →</a>
-                {% endif %}
-            </div>
-        </div>
+            
+            <div class="hero-right">
+                <div class="hero-glow-blob"></div>
+                <!-- 3D style WhatsApp Bot Mascot illustration using SVG -->
+                <svg class="hero-illustration" viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- WhatsApp Glowing Icon -->
+                    <g filter="url(#glow)">
+                        <circle cx="130" cy="55" r="28" fill="#25D366" style="animation: pulse-logo 2s ease-in-out infinite alternate;"/>
+                        <!-- Phone symbol inside whatsapp bubble -->
+                        <path d="M121 44C117 48 117 54 121 59L123 61C124 62 126 62 127 61L130 58L132 60L131 62C129 65 125 66 122 64C118 62 115 59 113 54C112 51 113 47 115 45L118 42L121 44Z" fill="white"/>
+                        <path d="M125 40.5C132.5 40.5 138.5 46.5 138.5 54C138.5 57.2 137.3 60.1 135.5 62.4L137.5 69.5L130.3 67.5C128.7 68.2 126.9 68.5 125 68.5C117.5 68.5 111.5 62.5 111.5 54C111.5 46.5 117.5 40.5 125 40.5ZM125 43C118.9 43 114 47.9 114 54C114 56.1 114.6 58 115.6 59.6L114.6 65.4L120.6 64.4C122 65.2 123.5 65.6 125 65.6C131.1 65.6 136 60.7 136 54C136 47.9 131.1 43 125 43Z" fill="white"/>
+                    </g>
+                    <!-- Floating Robot mascot -->
+                    <g class="robot-floating-svg">
+                        <!-- Robot Head -->
+                        <rect x="50" y="35" width="48" height="36" rx="10" fill="#111b21" stroke="#25D366" stroke-width="2"/>
+                        <rect x="58" y="44" width="32" height="18" rx="6" fill="#202c33"/>
+                        <!-- Eyes glowing -->
+                        <circle cx="67" cy="53" r="3" fill="#25D366" filter="url(#eyeGlow)"/>
+                        <circle cx="81" cy="53" r="3" fill="#25D366" filter="url(#eyeGlow)"/>
+                        <!-- Antenna -->
+                        <rect x="71" y="23" width="6" height="12" rx="2" fill="#25D366"/>
+                        <circle cx="74" cy="20" r="4" fill="#25D366" filter="url(#eyeGlow)"/>
+                        <!-- Cute Smile -->
+                        <path d="M69 67C69 67 71 70 74 70C77 70 79 67 79 67" stroke="#25D366" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Robot Body/Hands -->
+                        <path d="M40 85C40 76.7 46.7 70 55 70H93C101.3 70 108 76.7 108 85V95H40V85Z" fill="#111b21" stroke="#25D366" stroke-width="2"/>
+                        <!-- Heart or signal icon on body -->
+                        <path d="M70 82.5L74 86.5L78 82.5" stroke="#25D366" stroke-width="2"/>
+                    </g>
 
-        <!-- QUICK ACTIONS -->
-        <div class="quick-actions">
-            <a href="/create-bot" class="quick-btn"><span>🤖</span> Create Bot</a>
-            <a href="/add-service" class="quick-btn"><span>➕</span> Add Service</a>
-            <a href="/business-info" class="quick-btn"><span>🏢</span> Business Info</a>
-            <a href="#bookings" class="quick-btn"><span>📅</span> Bookings</a>
-        </div>
+                    <!-- Filters -->
+                    <defs>
+                        <filter id="glow" x="90" y="15" width="80" height="80" filterUnits="userSpaceOnUse">
+                            <feGaussianBlur stdDeviation="6" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                        <filter id="eyeGlow" x="50" y="10" width="40" height="40" filterUnits="userSpaceOnUse">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 4 RESPONSIVE FEATURE CARDS -->
+        <section class="feature-cards-row">
+            <!-- Card 1 -->
+            <a href="/create-bot" class="quick-action-card">
+                <div class="quick-card-left">
+                    <div class="quick-icon-box">
+                        <i data-lucide="bot"></i>
+                    </div>
+                    <div class="quick-text-box">
+                        <h3>Create Bot</h3>
+                        <span>Configure a new agent</span>
+                    </div>
+                </div>
+                <i data-lucide="arrow-right" class="quick-arrow" style="width: 18px; height: 18px;"></i>
+            </a>
+
+            <!-- Card 2 -->
+            <a href="/add-service" class="quick-action-card">
+                <div class="quick-card-left">
+                    <div class="quick-icon-box">
+                        <i data-lucide="plus"></i>
+                    </div>
+                    <div class="quick-text-box">
+                        <h3>Add Service</h3>
+                        <span>Add catalog listing</span>
+                    </div>
+                </div>
+                <i data-lucide="arrow-right" class="quick-arrow" style="width: 18px; height: 18px;"></i>
+            </a>
+
+            <!-- Card 3 -->
+            <a href="/business-info" class="quick-action-card">
+                <div class="quick-card-left">
+                    <div class="quick-icon-box">
+                        <i data-lucide="building"></i>
+                    </div>
+                    <div class="quick-text-box">
+                        <h3>Business Info</h3>
+                        <span>Modify business context</span>
+                    </div>
+                </div>
+                <i data-lucide="arrow-right" class="quick-arrow" style="width: 18px; height: 18px;"></i>
+            </a>
+
+            <!-- Card 4 -->
+            <a href="#bookings" class="quick-action-card">
+                <div class="quick-card-left">
+                    <div class="quick-icon-box">
+                        <i data-lucide="calendar"></i>
+                    </div>
+                    <div class="quick-text-box">
+                        <h3>Bookings</h3>
+                        <span>View recent reservations</span>
+                    </div>
+                </div>
+                <i data-lucide="arrow-right" class="quick-arrow" style="width: 18px; height: 18px;"></i>
+            </a>
+        </section>
 
         <!-- BOTS SECTION -->
-        <div class="section-header">
-            <h3>🤖 Your Bots</h3>
-            <span class="bot-meta">{{ bot_count }} / {{ bot_limit }} bots used
+        <section class="section-header">
+            <h3>🤖 Your Active Bots</h3>
+            <div class="section-header-meta">
+                <span>{{ bot_count }} / {{ bot_limit }} bots used</span>
                 {% if can_create %}
-                &nbsp;·&nbsp; <a href="/create-bot" style="color:var(--green);text-decoration:none;font-weight:600;">+ New Bot</a>
+                &nbsp;·&nbsp; <a href="/create-bot">+ Create New Bot</a>
                 {% else %}
-                &nbsp;·&nbsp; <a href="/upgrade" style="color:var(--yellow);text-decoration:none;font-weight:600;">Upgrade for more</a>
+                &nbsp;·&nbsp; <a href="/upgrade" style="color:var(--yellow);">Upgrade for more slots</a>
                 {% endif %}
-            </span>
-        </div>
+            </div>
+        </section>
 
-        {% if bots %}
-            {% for bot in bots %}
-            {% set is_maxed = today_count >= plan.daily_limit %}
-            <div class="bot-card {{ 'maxed' if is_maxed else '' }}" id="botCard{{ bot.id }}">
-                <div class="bot-info">
-                    <h4>
-                        🤖 {{ bot.bot_name }}
-                        {% if is_maxed %}
-                        <span class="badge badge-red">🚫 Max Reached</span>
+        <section class="bots-container">
+            {% if bots %}
+                {% for bot in bots %}
+                {% set is_maxed = today_count >= plan.daily_limit %}
+                <div class="bot-card {{ 'maxed' if is_maxed else '' }}" id="botCard{{ bot.id }}">
+                    <div class="bot-left">
+                        <div class="bot-title-row">
+                            <h4>🤖 {{ bot.bot_name }}</h4>
+                            {% if is_maxed %}
+                            <span class="bot-badge bot-badge-red">Limit Exceeded</span>
+                            {% endif %}
+                        </div>
+                        <p class="bot-welcome-txt">Welcome message: "{{ bot.welcome_message }}"</p>
+                        {% if bot.features %}
+                            <div class="bot-features-pills">
+                                {% for feature in bot.features.split(',') %}
+                                    <span class="feature-pill">{{ feature.strip() }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                    </h4>
-                    <p>{{ bot.welcome_message }}</p>
-                    {% if bot.features %}
-                        {% for feature in bot.features.split(',') %}
-                            <span class="badge">{{ feature.strip() }}</span>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                <div class="bot-actions">
-                    {% if is_maxed %}
-                    <div class="max-badge">🚫 Daily Limit Reached</div><br>
-                    <a href="/upgrade" class="btn-upgrade">⚡ Upgrade</a>
-                    {% elif bot.is_active %}
-                        <p class="status-active">🟢 Active</p>
-                        <a href="#" onclick="disconnectBot({{ bot.user_id }})" class="btn-disconnect">🔌 Disconnect</a>
-                    {% else %}
-                        <p class="status-inactive">🔴 Inactive</p>
-                        <a href="/connect/{{ bot.id }}" class="btn btn-sm">📱 Connect</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px;">
-                <p style="font-size:15px;margin-bottom:8px;">No bots yet!</p>
-                <a href="/create-bot">+ Create your first bot</a>
-            </div>
-        {% endif %}
-
-        <!-- SERVICES + BUSINESS GRID -->
-        <div class="grid" style="margin-top:20px;">
-            <div class="card">
-                <h3>🛎️ Services
-                    <a href="/add-service" class="btn-secondary" style="font-size:11px;">+ Add</a>
-                </h3>
-                {% if services %}
-                    {% for service in services %}
-                    <div class="service-item">
-                        <div>
-                            <div class="service-name">{{ service.service_name }}</div>
-                            <div class="service-desc">{{ service.description }}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div class="service-price">₹{{ service.price }}</div>
-                            <a href="/delete-service/{{ service.id }}" class="btn-danger" onclick="return confirm('Delete?')">🗑️</a>
-                        </div>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="empty"><p>No services yet!</p><p style="font-size:11px;margin-top:4px;">Add services → Bot will show them</p></div>
-                {% endif %}
-            </div>
-
-            <div class="card">
-                <h3>🏢 Business Info
-                    <a href="/business-info" class="btn-secondary" style="font-size:11px;">✏️ Edit</a>
-                </h3>
-                {% if business %}
-                    <div class="info-item">📍 {{ business.address }}</div>
-                    <div class="info-item">⏰ {{ business.timings }}</div>
-                    {% if business.website %}<div class="info-item">🌐 {{ business.website }}</div>{% endif %}
-                    {% if business.extra_info %}<div class="info-item">ℹ️ {{ business.extra_info }}</div>{% endif %}
-                {% else %}
-                    <div class="empty"><p>No business info yet!</p><p style="font-size:11px;margin-top:4px;"><a href="/business-info">Add info →</a></p></div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- BOOKINGS -->
-        <div class="card" id="bookings">
-            <h3>📅 Recent Bookings</h3>
-            {% if bookings %}
-                {% for booking in bookings %}
-                <div class="booking-item">
-                    <div class="booking-name">{{ booking.customer_name }} — {{ booking.service }}</div>
-                    <div class="booking-detail">📱 {{ booking.customer_phone }} &nbsp;|&nbsp; 🕐 {{ booking.date_time }} &nbsp;|&nbsp; {{ booking.status }}</div>
+                    
+                    <div class="bot-right">
+                        {% if is_maxed %}
+                            <span class="status-badge inactive"><span class="status-dot"></span> Exceeded</span>
+                            <a href="/upgrade" class="btn-action-bot" style="background: linear-gradient(135deg, var(--yellow), var(--red)); color: white;">⚡ Upgrade</a>
+                        {% elif bot.is_active %}
+                            <span class="status-badge active"><span class="status-dot"></span> Active</span>
+                            <a href="#" onclick="disconnectBot({{ bot.user_id }}); return false;" class="btn-disconnect-bot">
+                                <i data-lucide="unplug" style="width: 14px; height: 14px;"></i>
+                                <span>Disconnect</span>
+                            </a>
+                        {% else %}
+                            <span class="status-badge inactive"><span class="status-dot"></span> Offline</span>
+                            <a href="/connect/{{ bot.id }}" class="btn-action-bot">
+                                <i data-lucide="qr-code" style="width: 14px; height: 14px; stroke-width: 2.5px;"></i>
+                                <span>Connect</span>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="empty"><p>No bookings yet — customers will book via WhatsApp!</p></div>
+                <div class="empty-state-panel">
+                    <div class="empty-illustration-wrapper">
+                        <!-- Floating Robot illustration -->
+                        <svg class="robot-floating-svg" width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="20" y="25" width="50" height="42" rx="12" fill="#1c2c35" stroke="#25D366" stroke-width="2"/>
+                            <rect x="28" y="35" width="34" height="20" rx="6" fill="#111b21"/>
+                            <circle cx="38" cy="45" r="3" fill="#25D366"/>
+                            <circle cx="52" cy="45" r="3" fill="#25D366"/>
+                            <rect x="42" y="11" width="6" height="14" rx="2" fill="#25D366"/>
+                            <circle cx="45" cy="8" r="4" fill="#25D366"/>
+                            <path d="M38 59C38 59 41 62 45 62C49 62 52 59 52 59" stroke="#25D366" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h4>Create Your First Bot</h4>
+                    <p>Get started by creating an AI WhatsApp bot with custom instructions to automate your business replies.</p>
+                    <a href="/create-bot" class="btn-action-bot">
+                        <i data-lucide="plus" style="width: 16px; height: 16px; stroke-width: 3px;"></i>
+                        <span>Create Bot</span>
+                    </a>
+                </div>
             {% endif %}
-        </div>
+        </section>
 
-    </div>
+        <!-- SERVICES + BUSINESS INFO GRID -->
+        <section class="bottom-grid">
+            
+            <!-- SERVICES CARD -->
+            <div class="grid-card">
+                <div class="card-title-row">
+                    <h3>
+                        <i data-lucide="clipboard-list" style="width: 18px; height: 18px;"></i>
+                        <span>Services Catalog</span>
+                    </h3>
+                    <a href="/add-service" class="btn-card-header">+ Add Service</a>
+                </div>
+                
+                {% if services %}
+                    <div class="services-list">
+                        {% for service in services %}
+                        <div class="service-row">
+                            <div class="service-left">
+                                <h4>{{ service.service_name }}</h4>
+                                <p>{{ service.description or 'No description provided' }}</p>
+                            </div>
+                            <div class="service-right">
+                                <span class="service-price-tag">₹{{ service.price }}</span>
+                                <a href="/delete-service/{{ service.id }}" class="btn-delete-service" onclick="return confirm('Are you sure you want to delete this service?')">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state-panel" style="padding: 24px;">
+                        <p style="margin-bottom: 0;">No services added yet. Add services so the AI chatbot can display them to your customers.</p>
+                    </div>
+                {% endif %}
+            </div>
 
+            <!-- BUSINESS INFO CARD -->
+            <div class="grid-card">
+                <div class="card-title-row">
+                    <h3>
+                        <i data-lucide="building" style="width: 18px; height: 18px;"></i>
+                        <span>Business Information</span>
+                    </h3>
+                    <a href="/business-info" class="btn-card-header">✏️ Edit Context</a>
+                </div>
+                
+                {% if business %}
+                    <div class="info-list">
+                        <div class="info-row">
+                            <i data-lucide="map-pin"></i>
+                            <span>Address: {{ business.address }}</span>
+                        </div>
+                        <div class="info-row">
+                            <i data-lucide="clock"></i>
+                            <span>Timings: {{ business.timings }}</span>
+                        </div>
+                        {% if business.website %}
+                        <div class="info-row">
+                            <i data-lucide="globe"></i>
+                            <span>Website: <a href="{{ business.website }}" target="_blank" style="color: var(--primary); text-decoration: none;">{{ business.website }}</a></span>
+                        </div>
+                        {% endif %}
+                        {% if business.extra_info %}
+                        <div class="info-row">
+                            <i data-lucide="help-circle"></i>
+                            <span>Details: {{ business.extra_info }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="empty-state-panel" style="padding: 24px;">
+                        <p>No business information set yet.</p>
+                        <a href="/business-info" class="btn-card-header" style="margin-top: 8px; display: inline-block;">Set Business Context</a>
+                    </div>
+                {% endif %}
+            </div>
+
+        </section>
+
+        <!-- BOOKINGS CARD -->
+        <section class="bookings-card" id="bookings">
+            <div class="card-title-row" style="border: none; padding: 0;">
+                <h3>
+                    <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
+                    <span>Recent Bookings</span>
+                </h3>
+            </div>
+            
+            {% if bookings %}
+                <div class="bookings-list">
+                    {% for booking in bookings %}
+                    <div class="booking-row">
+                        <div class="booking-left-info">
+                            <h4>{{ booking.customer_name }}</h4>
+                            <p>
+                                <span><i data-lucide="smartphone" style="width: 14px; height: 14px;"></i> {{ booking.customer_phone }}</span>
+                                <span class="meta-divider">|</span>
+                                <span><i data-lucide="tag" style="width: 14px; height: 14px;"></i> {{ booking.service }}</span>
+                                <span class="meta-divider">|</span>
+                                <span><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> {{ booking.date_time }}</span>
+                            </p>
+                        </div>
+                        <span class="booking-status-tag">{{ booking.status }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state-panel" style="padding: 32px;">
+                    <i data-lucide="calendar" style="width: 32px; height: 32px; color: var(--text-light); margin-bottom: 8px;"></i>
+                    <h4>No bookings yet</h4>
+                    <p style="margin-bottom: 0;">Your customers will book appointments directly through their WhatsApp conversation with your chatbot!</p>
+                </div>
+            {% endif %}
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="border-top: 1px solid var(--panel-border); padding: 24px 32px; text-align: center; font-size: 13px; color: var(--text-light); margin-top: auto;">
+        &copy; 2026 Botify. Powered by Groq AI and Baileys. Built by Mukil Arasu.
+    </footer>
+
+    <!-- Socket and refresh scripts -->
     <script>
-        // ─────────────────────────────────────────────
-        // ✅ LIVE MESSAGE COUNT REFRESH (every 30s)
-        // Updates count bar without page reload
-        // ─────────────────────────────────────────────
-        const dailyLimit = {{ plan.daily_limit }};
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
+        // Refresh usage details dynamically
         async function refreshMsgCount() {
             try {
-                const res  = await fetch('/api/msg-count')
+                const res = await fetch('/api/msg-count')
                 const data = await res.json()
 
                 const count = data.today_count
                 const limit = data.daily_limit
-                const pct   = Math.min(Math.round((count / limit) * 100), 100)
+                const pct = Math.min(Math.round((count / limit) * 100), 100)
 
-                // Update bar width
+                // Progress Bar
                 const fill = document.getElementById('countFill')
-                fill.style.width = pct + '%'
-                fill.className = 'count-fill' + (pct >= 100 ? ' danger' : pct >= 70 ? ' warn' : '')
+                if (fill) {
+                    fill.style.width = pct + '%'
+                    fill.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 70 ? ' warn' : '')
+                }
 
-                // Update numbers
-                document.getElementById('countUsed').textContent  = count
-                document.getElementById('countTotal').textContent = limit
-                document.getElementById('countUsed').style.color  =
-                    pct >= 100 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#e5e7eb'
+                // Numbers
+                const usedSpan = document.getElementById('countUsed')
+                if (usedSpan) {
+                    usedSpan.textContent = count
+                    usedSpan.style.color = pct >= 100 ? '#ff5252' : pct >= 70 ? '#ffa726' : '#f0f2f5'
+                }
+                const totalSpan = document.getElementById('countTotal')
+                if (totalSpan) totalSpan.textContent = limit
 
-                // Update plan sub text
+                // Plan Sub Text
                 const planSub = document.getElementById('planSubText')
                 if (planSub) {
                     const botPart = planSub.textContent.split('·')[0].trim()
                     planSub.innerHTML = `${botPart} &nbsp;·&nbsp; ${count}/${limit} msgs today`
                 }
 
-                // Show/hide limit warning bar
+                // Show/hide limit warning
                 const maxBar = document.getElementById('maxReachedBar')
                 if (maxBar) maxBar.style.display = pct >= 100 ? 'flex' : 'none'
 
@@ -452,23 +1435,21 @@
             }
         }
 
-        // ─────────────────────────────────────────────
-        // ✅ PAYMENT STATUS CHECK
-        // Shows pending banner if user paid but admin not approved yet
-        // ─────────────────────────────────────────────
+        // Refresh Payment status
         async function checkPaymentStatus() {
             try {
-                const res  = await fetch('/api/payment-status')
+                const res = await fetch('/api/payment-status')
                 const data = await res.json()
 
                 const banner = document.getElementById('pendingPaymentBanner')
-                if (data.payment_status === 'submitted' && !data.plan_activated) {
-                    banner.style.display = 'flex'
-                } else {
-                    banner.style.display = 'none'
+                if (banner) {
+                    if (data.payment_status === 'submitted' && !data.plan_activated) {
+                        banner.style.display = 'flex'
+                    } else {
+                        banner.style.display = 'none'
+                    }
                 }
 
-                // If plan was just activated, reload page to show new plan
                 if (data.plan_activated && data.current_plan !== 'free') {
                     const currentBadge = document.getElementById('planBadge')
                     if (currentBadge && currentBadge.textContent.trim() === 'FREE') {
@@ -480,23 +1461,23 @@
             }
         }
 
-        // ─────────────────────────────────────────────
-        // DISCONNECT BOT
-        // ─────────────────────────────────────────────
+        // Disconnect chatbot
         async function disconnectBot(userId) {
-            if (confirm('Disconnect WhatsApp bot?')) {
-                const res = await fetch(`/api/disconnect/${userId}`)
-                window.location.reload()
+            if (confirm('Are you sure you want to disconnect this WhatsApp chatbot?')) {
+                try {
+                    await fetch(`/api/disconnect/${userId}`)
+                    window.location.reload()
+                } catch (e) {
+                    alert('Failed to disconnect bot: ' + e.message)
+                }
             }
         }
 
-        // ─────────────────────────────────────────────
-        // START: refresh every 30s
-        // ─────────────────────────────────────────────
-        setInterval(refreshMsgCount,    30000)   // Live count every 30s
-        setInterval(checkPaymentStatus, 60000)   // Payment status every 60s
+        // Polling intervals
+        setInterval(refreshMsgCount, 30000)
+        setInterval(checkPaymentStatus, 60000)
 
-        // Run once on load
+        // Run on start
         checkPaymentStatus()
     </script>
 </body>

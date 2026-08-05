@@ -24,6 +24,13 @@ def create_app():
                            ConversationHistory, MessageCount, UserPlan, Payment
         db.create_all()
 
+        try:
+            db.session.execute(db.text("ALTER TABLE bot ADD COLUMN custom_prompt TEXT"))
+            db.session.commit()
+            print("[OK] Migrated: added custom_prompt column to bot table.")
+        except Exception:
+            db.session.rollback()
+
         from werkzeug.security import generate_password_hash
         admin_user = User.query.filter_by(email='mukilarasu@admin.com').first()
         if not admin_user:
@@ -36,8 +43,8 @@ def create_app():
             )
             db.session.add(admin_user)
             db.session.commit()
-            print("✅ Admin user created: mukilarasu@admin.com")
-
+            print("[OK] Admin user created: mukilarasu@admin.com")
+            
     @login_manager.user_loader
     def load_user(user_id):
         from models import User
@@ -55,6 +62,6 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    print("✅ Flask running!")
-    print("📊 Admin panel: http://localhost:5000/admin/login")
+    print("[OK] Flask running!")
+    print("Admin panel: http://localhost:5000/admin/login")
     app.run(debug=True, port=5000)

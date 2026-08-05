@@ -1,160 +1,882 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Botify</title>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial; background: #0a0f1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .box {
-            background: #111827;
-            padding: 40px;
-            border-radius: 16px;
-            width: 380px;
-            border: 1px solid #1f2937;
+        :root {
+            --primary: #25D366;
+            --primary-hover: #20ba59;
+            --secondary: #128C7E;
+            --dark-bg: #0B141A;
+            --dark-card: #111b21;
+            --text-dark: #0f172a;
+            --text-muted-dark: #475569;
+            --text-light-dark: #64748b;
+            --border-dark: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
         }
-        .logo { text-align: center; font-size: 40px; margin-bottom: 8px; }
-        h2 { color: #fff; text-align: center; font-size: 22px; margin-bottom: 6px; }
-        .subtitle { text-align: center; color: #6b7280; font-size: 13px; margin-bottom: 28px; }
-        label { display: block; color: #9ca3af; font-size: 13px; margin-bottom: 6px; margin-top: 14px; }
-        input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 11px 14px;
-            background: #0d1526;
-            border: 1px solid #1f2937;
-            border-radius: 8px;
-            color: #e5e7eb;
-            font-size: 14px;
-        }
-        input:focus { outline: none; border-color: #00c896; }
-        button[type="submit"] {
-            width: 100%;
-            padding: 13px;
-            background: #00c896;
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 22px;
-        }
-        button[type="submit"]:hover { background: #00a07a; }
-        .flash { color: #ef4444; text-align: center; font-size: 13px; margin-bottom: 12px;
-                 background: rgba(239,68,68,0.1); padding: 8px; border-radius: 6px; }
-        .register-link { text-align: center; margin-top: 16px; font-size: 13px; color: #6b7280; }
-        .register-link a { color: #00c896; text-decoration: none; }
 
-        .admin-divider {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background-color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* ── SPLIT SCREEN LAYOUT ── */
+        .split-container {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+        }
+
+        /* ── LEFT SIDE (50%): Dark Panel ── */
+        .left-panel {
+            flex: 0 0 50%;
+            background: linear-gradient(135deg, #0B141A 0%, #111827 100%);
+            padding: 48px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            color: #f0f2f5;
+        }
+
+        /* Glowing green circles & particles in left panel background */
+        .left-glow-1 {
+            position: absolute;
+            top: 20%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(37, 211, 102, 0.08) 0%, rgba(37, 211, 102, 0) 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .left-glow-2 {
+            position: absolute;
+            bottom: 10%;
+            right: -10%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(18, 140, 126, 0.06) 0%, rgba(18, 140, 126, 0) 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .left-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .left-logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 32px 0 16px;
+            font-weight: 800;
+            font-size: 22px;
+            color: white;
+            text-decoration: none;
+            letter-spacing: -0.5px;
         }
-        .admin-divider::before, .admin-divider::after {
-            content: '';
-            flex: 1;
-            border-top: 1px solid #1f2937;
+
+        .left-logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
-        .admin-divider span {
-            font-size: 10px;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
-        .admin-section {
-            background: #0d1526;
-            border: 1px solid #1f2937;
-            border-radius: 10px;
-            padding: 16px;
-        }
-        .admin-section-title {
+
+        .badge-ai {
+            background-color: rgba(37, 211, 102, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(37, 211, 102, 0.2);
             font-size: 11px;
-            color: #4b5563;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+        }
+
+        .left-content {
+            margin: auto 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-headline-group h1 {
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            color: white;
             margin-bottom: 12px;
+        }
+
+        .hero-headline-group h1 span {
+            color: var(--primary);
+            background: linear-gradient(to right, var(--primary), #a3e635);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-headline-group p {
+            font-size: 16px;
+            color: #8696a0;
+            line-height: 1.5;
+            max-width: 480px;
+        }
+
+        /* 3 Left-Side Feature Cards */
+        .left-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 480px;
+        }
+
+        .left-feature-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+
+        .left-feature-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+            border-color: rgba(37, 211, 102, 0.2);
+        }
+
+        .left-feat-icon {
+            width: 38px;
+            height: 38px;
+            background-color: rgba(37, 211, 102, 0.08);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .left-feat-text h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .left-feat-text p {
+            font-size: 12px;
+            color: #8696a0;
+            line-height: 1.4;
+        }
+
+        .left-footer {
+            z-index: 10;
+            font-size: 13px;
+            color: #667781;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .left-footer i {
+            color: var(--primary);
+        }
+
+        /* 3D SVG mascot floating on left panel */
+        .left-mascot-container {
+            position: absolute;
+            right: 20px;
+            bottom: 60px;
+            width: 160px;
+            height: 160px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .mascot-floating {
+            animation: float 5s ease-in-out infinite alternate;
+        }
+
+        /* ── RIGHT SIDE (50%): White / Glassmorphic Login Card ── */
+        .right-panel {
+            flex: 0 0 50%;
+            background-color: #ffffff;
+            /* Subtle WhatsApp pattern */
+            background-image: radial-gradient(rgba(37, 211, 102, 0.1) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient gradient blobs on right panel */
+        .right-blob-1 {
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(37, 211, 102, 0.06) 0%, rgba(37, 211, 102, 0) 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .right-blob-2 {
+            position: absolute;
+            bottom: -10%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(18, 140, 126, 0.04) 0%, rgba(18, 140, 126, 0) 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .login-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-logo-mini {
+            align-self: center;
+            background: rgba(37, 211, 102, 0.1);
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .login-header-text {
+            text-align: center;
+        }
+
+        .login-header-text h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .login-header-text p {
+            font-size: 13.5px;
+            color: var(--text-light-dark);
+        }
+
+        /* Inputs */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--text-light-dark);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background-color: white;
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 13.5px;
+            color: var(--text-dark);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.12);
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            right: 14px;
+            background: none;
+            border: none;
+            color: var(--text-light-dark);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Options row */
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+        }
+
+        .checkbox-label {
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-        .admin-section-title::before {
-            content: '';
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: #374151;
-            border-radius: 50%;
-        }
-        .admin-section input[type="password"] {
-            background: #111827;
-            border-color: #1f2937;
-            font-size: 13px;
-            padding: 9px 12px;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        .admin-section input[type="password"]:focus { border-color: #534AB7; }
-        .admin-login-btn {
-            width: 100%;
-            padding: 10px;
-            background: #1a1a3e;
-            color: #9ca3af;
-            border: 1px solid #2d2d5e;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: bold;
             cursor: pointer;
-            letter-spacing: 0.5px;
+            user-select: none;
+            color: var(--text-muted-dark);
+        }
+
+        .checkbox-label input {
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .forgot-link:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Buttons */
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.15);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-0.5px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25);
+        }
+
+        .btn-login:active {
+            transform: scale(0.99);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-light-dark);
+            margin: 8px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .divider::before { margin-right: 12px; }
+        .divider::after { margin-left: 12px; }
+
+        .btn-google {
+            width: 100%;
+            padding: 11px;
+            background-color: white;
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             transition: all 0.2s;
+        }
+
+        .btn-google:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .google-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .signup-footer {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--text-light-dark);
             margin-top: 8px;
         }
-        .admin-login-btn:hover {
-            background: #252560;
-            color: #a78bfa;
-            border-color: #534AB7;
+
+        .signup-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .signup-footer a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Collapsible Admin block */
+        .admin-drawer {
+            border-top: 1px dashed var(--border-dark);
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .admin-drawer-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-light-dark);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .admin-drawer-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .admin-fields-wrapper {
+            margin-top: 12px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .admin-fields-wrapper.show {
+            max-height: 120px;
+            opacity: 1;
+        }
+
+        .admin-input-wrapper {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 9px 12px 9px 34px;
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-sm);
+            background-color: white;
+            font-size: 12px;
+            color: var(--text-dark);
+            font-family: inherit;
+        }
+
+        .admin-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .btn-admin-auth {
+            width: 100%;
+            padding: 8px;
+            background-color: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s;
+        }
+
+        .rotate-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Alerts */
+        .alert-box {
+            background-color: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: shake 0.5s;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .left-panel {
+                display: none; /* Hide left split on smaller screens */
+            }
+            .right-panel {
+                flex: 0 0 100%;
+                padding: 24px;
+            }
+            .login-card {
+                padding: 32px 24px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="box">
-    <div class="logo">🤖</div>
-    <h2>Botify</h2>
-    <div class="subtitle">WhatsApp Bot SaaS</div>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for msg in messages %}
-                <p class="flash">{{ msg }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="split-container">
 
-    <form method="POST" action="/login">
-        <label>Email</label>
-        <input type="email" name="email" placeholder="your@email.com" required>
-        <label>Password</label>
-        <input type="password" name="password" placeholder="••••••••" required>
-        <button type="submit">Login →</button>
-    </form>
+        <!-- ── LEFT SIDE (50%): Gradient Brand Hero ── -->
+        <section class="left-panel">
+            <div class="left-glow-1"></div>
+            <div class="left-glow-2"></div>
 
-    <div class="register-link">
-        No account? <a href="/register">Register here</a>
+            <div class="left-header">
+                <a href="#" class="left-logo">
+                    <div class="left-logo-icon">
+                        <i data-lucide="bot"></i>
+                    </div>
+                    <span>Botify</span>
+                </a>
+                <span class="badge-ai">AI-Powered WhatsApp Business</span>
+            </div>
+
+            <div class="left-content">
+                <div class="hero-headline-group">
+                    <h1>Welcome Back to<br><span>Botify.</span></h1>
+                    <p>Manage customer support, bookings, and business conversations with AI-powered automation.</p>
+                </div>
+
+                <div class="left-features">
+                    <!-- Feature 1 -->
+                    <div class="left-feature-card">
+                        <div class="left-feat-icon">
+                            <i data-lucide="bot"></i>
+                        </div>
+                        <div class="left-feat-text">
+                            <h3>🤖 AI Customer Support</h3>
+                            <p>Automatically answer customer questions 24/7 with human-like precision.</p>
+                        </div>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="left-feature-card">
+                        <div class="left-feat-icon">
+                            <i data-lucide="calendar"></i>
+                        </div>
+                        <div class="left-feat-text">
+                            <h3>📅 Smart Booking System</h3>
+                            <p>Allow customers to schedule appointments instantly via chat.</p>
+                        </div>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="left-feature-card">
+                        <div class="left-feat-icon">
+                            <i data-lucide="bar-chart-3"></i>
+                        </div>
+                        <div class="left-feat-text">
+                            <h3>📊 Business Analytics</h3>
+                            <p>Track conversation logs, booking records and customer growth insights.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="left-footer">
+                <i data-lucide="award"></i>
+                <span>Trusted by 1000+ Businesses worldwide</span>
+            </div>
+
+            <!-- Floating Mascot SVG -->
+            <div class="left-mascot-container">
+                <svg class="mascot-floating" width="140" height="140" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g filter="url(#shadowFilter)">
+                        <!-- Robot Head -->
+                        <rect x="25" y="25" width="50" height="42" rx="12" fill="#111b21" stroke="#25D366" stroke-width="2"/>
+                        <rect x="33" y="34" width="34" height="20" rx="6" fill="#202c33"/>
+                        <circle cx="43" cy="44" r="3.5" fill="#25D366" filter="url(#glowFilter)"/>
+                        <circle cx="57" cy="44" r="3.5" fill="#25D366" filter="url(#glowFilter)"/>
+                        <!-- Antenna -->
+                        <rect x="47" y="13" width="6" height="12" rx="2" fill="#25D366"/>
+                        <circle cx="50" cy="9" r="4.5" fill="#25D366" filter="url(#glowFilter)"/>
+                        <!-- Mouth smile -->
+                        <path d="M41 57C41 57 44 60 47 60C50 60 53 57 53 57" stroke="#25D366" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Floating WhatsApp bubble logo -->
+                        <circle cx="80" cy="30" r="14" fill="#25D366" />
+                        <path d="M77 24C75 26 75 29 77 31.5L78 32.5C78.5 33 79.5 33 80 32.5L81.5 31L82.5 32L82 33C81 34.5 79 35 77.5 34C75.5 33 74 31.5 73 29C72.5 27.5 73 25.5 74 24.5L75.5 23L77 24Z" fill="white"/>
+                    </g>
+                    <defs>
+                        <filter id="glowFilter" x="30" y="-5" width="40" height="40" filterUnits="userSpaceOnUse">
+                            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                        <filter id="shadowFilter" x="0" y="0" width="100" height="100" filterUnits="userSpaceOnUse">
+                            <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.3"/>
+                        </filter>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- ── RIGHT SIDE (50%): Form Workspace Panel ── -->
+        <section class="right-panel">
+            <div class="right-blob-1"></div>
+            <div class="right-blob-2"></div>
+
+            <div class="login-card">
+
+                <div class="login-logo-mini">
+                    <i data-lucide="message-square" style="width: 24px; height: 24px; fill: currentColor; stroke: none;"></i>
+                </div>
+
+                <div class="login-header-text">
+                    <h2>Welcome Back 👋</h2>
+                    <p>Login to your workspace</p>
+                </div>
+
+                <!-- Flash messages alert -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert-box">
+                            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                            <span>
+                                {% for msg in messages %}
+                                    {{ msg }}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Login Form -->
+                <form method="POST" action="/login">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label" for="email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input class="form-input" type="email" id="email" name="email" placeholder="name@company.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="lock" class="input-icon"></i>
+                            <input class="form-input" type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" class="btn-toggle-password" id="togglePassword">
+                                <i data-lucide="eye" id="eyeIcon" style="width: 18px; height: 18px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="options-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login" style="margin-top: 24px;">
+                        <span>Sign In</span>
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </form>
+
+                <div class="divider">OR</div>
+
+                <!-- Google OAuth Button -->
+                <button type="button" class="btn-google">
+                    <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                </button>
+
+                <div class="signup-footer">
+                    Don't have an account? <a href="/register">Sign Up</a>
+                </div>
+
+                <!-- Admin Access Toggle Block (Collapsible) -->
+                <div class="admin-drawer">
+                    <button type="button" class="admin-drawer-btn" id="adminToggle">
+                        <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i>
+                        <span>Admin Access Portal</span>
+                        <i data-lucide="chevron-down" class="chevron-icon" id="adminChevron" style="width: 14px; height: 14px;"></i>
+                    </button>
+                    
+                    <div class="admin-fields-wrapper" id="adminForm">
+                        <form method="POST" action="/admin/login" class="admin-form">
+                            <div class="admin-input-wrapper">
+                                <i data-lucide="key" style="position: absolute; left: 10px; top: 10px; width: 14px; height: 14px; color: var(--text-light-dark);"></i>
+                                <input class="admin-input" type="password" name="password" placeholder="Enter administrative key" required autocomplete="new-password">
+                            </div>
+                            <button type="submit" class="btn-admin-auth">Authenticate & Access</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </div>
 
-    <!-- Admin section — direct form POST -->
-    <div class="admin-divider">
-        <span>restricted</span>
-    </div>
+    <!-- Toggle password visibility and admin drawer script -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-    <div class="admin-section">
-        <div class="admin-section-title">Admin access only</div>
-        <form method="POST" action="/admin/login">
-            <input type="password" name="password" placeholder="Admin password" autocomplete="off">
-            <button type="submit" class="admin-login-btn">Access Admin Panel</button>
-        </form>
-    </div>
+        // Toggle user password
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
 
-</div>
+        togglePasswordBtn.addEventListener('click', function() {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            
+            if (isPassword) {
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        });
+
+        // Admin drawer toggle
+        const adminToggle = document.getElementById('adminToggle');
+        const adminForm = document.getElementById('adminForm');
+        const adminChevron = document.getElementById('adminChevron');
+
+        adminToggle.addEventListener('click', function() {
+            const isShown = adminForm.classList.contains('show');
+            if (isShown) {
+                adminForm.classList.remove('show');
+                adminChevron.classList.remove('rotate-chevron');
+            } else {
+                adminForm.classList.add('show');
+                adminChevron.classList.add('rotate-chevron');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,34 +1,201 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welcome to Botify</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0a0f1e;color:#e5e7eb;font-family:sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
-.container{max-width:800px;width:100%;text-align:center;}
-h1{font-size:3rem;font-weight:800;margin-bottom:1rem;color:#fff;}
-h1 em{font-style:normal;color:#00c896;}
-p{color:#6b7280;font-size:1.1rem;margin-bottom:2.5rem;line-height:1.7;}
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2.5rem;}
-.feature{background:#111827;border:1px solid #1f2937;border-radius:16px;padding:1.5rem;text-align:left;}
-.feature h3{font-size:.95rem;font-weight:700;margin-bottom:.4rem;color:#fff;}
-.feature p{font-size:.85rem;color:#6b7280;margin:0;}
-.cta{display:inline-block;background:#00c896;color:#000;font-weight:700;font-size:1rem;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00c896;
+            --green-glow: rgba(0, 200, 150, 0.4);
+            --bg: #0a0f1e;
+            --card: rgba(17, 24, 39, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 50% 50%, #111a33 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Ambient glowing background blobs */
+        .blob {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 200, 150, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(40px);
+        }
+        .blob-1 { top: 10%; left: 15%; }
+        .blob-2 { bottom: 10%; right: 15%; }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 1.2rem;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+        h1 em {
+            font-style: normal;
+            background: linear-gradient(135deg, #00c896 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--muted);
+            font-size: 1.2rem;
+            margin-bottom: 3.5rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .feature {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 200, 150, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .feature:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 200, 150, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .feature:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: #fff;
+        }
+
+        .feature p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .cta {
+            display: inline-block;
+            background: var(--green);
+            color: #000;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 1.1rem 2.8rem;
+            border-radius: 14px;
+            text-decoration: none;
+            box-shadow: 0 4px 20px var(--green-glow);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.2px;
+        }
+        .cta:hover {
+            background: #00e0a8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 200, 150, 0.6);
+        }
+        .cta:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 2.4rem; }
+            p.subtitle { font-size: 1rem; margin-bottom: 2.5rem; }
+            .features { margin-bottom: 2.5rem; }
+            body { padding: 1rem; }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<h1>Welcome to <em>Botify</em>!</h1>
-<p>Your AI-powered WhatsApp bot is ready.<br>Automate bookings, replies, and grow your business 24/7.</p>
-<div class="features">
-<div class="feature"><h3>🤖 Auto-Reply Bot</h3><p>AI replies to customers instantly using your business info.</p></div>
-<div class="feature"><h3>📅 Booking Management</h3><p>Customers book services directly through WhatsApp.</p></div>
-<div class="feature"><h3>📊 Analytics</h3><p>Track messages and bookings from your dashboard.</p></div>
-<div class="feature"><h3>⚡ Easy Setup</h3><p>Connect WhatsApp in minutes with a QR code scan.</p></div>
-</div>
-<a href="/choose-plan" class="cta">Get Started → Choose Your Plan</a>
-</div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <h1>Welcome to <em>Botify</em>!</h1>
+        <p class="subtitle">Your AI-powered WhatsApp bot workspace is ready.<br>Automate booking reservations, customer support replies, and scale your business 24/7.</p>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🤖</span>
+                <h3>Auto-Reply Bot</h3>
+                <p>AI replies to customers instantly using your custom system instructions and business settings.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📅</span>
+                <h3>Booking Engine</h3>
+                <p>Customers can request and schedule services directly through a natural WhatsApp conversation.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📊</span>
+                <h3>Analytics Monitor</h3>
+                <p>Track message counts, bot responses, active bookings, and customer logs in real-time.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <h3>Instant Setup</h3>
+                <p>Connect your personal or business WhatsApp number in minutes by scanning a secure QR code.</p>
+            </div>
+        </div>
+        
+        <a href="/choose-plan" class="cta">Get Started → Choose Your Plan</a>
+    </div>
 </body>
 </html>

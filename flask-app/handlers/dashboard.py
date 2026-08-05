@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime, date, timedelta
 from models import (User, Bot, Service, BusinessInfo, UserPlan, Payment,
@@ -175,6 +175,7 @@ def create_bot():
             user_id=current_user.id,
             bot_name=request.form.get('bot_name'),
             welcome_message=request.form.get('welcome_message'),
+            custom_prompt=request.form.get('custom_prompt'),
             features=','.join(request.form.getlist('features')),
             is_active=False
         )
@@ -355,7 +356,7 @@ def get_msg_count():
 # ✅ Plan expired → block bot completely
 # ✅ Free plan → only 5 msgs/day
 # ─────────────────────────────────────────────
-@dashboard.route('/api/check-limit/<int:user_id>')
+@dashboard.route('/api/check-limit/<int:user_id>', methods=['GET', 'POST'])
 def check_limit(user_id):
     try:
         today = str(date.today())
@@ -414,6 +415,7 @@ def start_bot(user_id):
             'user_id':         user_id,
             'bot_name':        bot.bot_name        if bot else '',
             'welcome_message': bot.welcome_message if bot else '',
+            'custom_prompt':   bot.custom_prompt   if bot else '',
             'features':        bot.features        if bot else '',
             'business_name':   current_user.business_name   or '',
             'whatsapp_number': current_user.whatsapp_number or '',
@@ -534,11 +536,26 @@ def active_bots():
         bots_list = []
         for bot in active:
             user = User.query.get(bot.user_id)
+            services = Service.query.filter_by(user_id=bot.user_id).all()
+            business = BusinessInfo.query.filter_by(user_id=bot.user_id).first()
+
+            services_text = '\n'.join([
+                f"• {s.service_name} - ₹{s.price}\n  {s.description or ''}"
+                for s in services
+            ]) or "No services listed yet"
+
             bots_list.append({
                 'user_id':         bot.user_id,
                 'bot_name':        bot.bot_name or '',
-                'business_name':   user.business_name   if user else '',
+                'welcome_message': bot.welcome_message or '',
+                'custom_prompt':   bot.custom_prompt or '',
+                'features':        bot.features or '',
+                'business_name':   user.business_name if user else '',
                 'whatsapp_number': user.whatsapp_number if user else '',
+                'services':        services_text,
+                'address':         business.address if business else 'Not provided',
+                'timings':         business.timings if business else 'Not provided',
+                'extra_info':      business.extra_info if business else ''
             })
         return jsonify({'bots': bots_list})
     except Exception as e:

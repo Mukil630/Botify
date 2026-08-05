@@ -46,6 +46,7 @@ class Bot(db.Model):
     user_id         = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     bot_name        = db.Column(db.String(100))
     welcome_message = db.Column(db.Text)
+    custom_prompt   = db.Column(db.Text)
     features        = db.Column(db.String(200))
     is_active       = db.Column(db.Boolean, default=False)
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)

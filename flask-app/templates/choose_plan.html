@@ -1,91 +1,271 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Choose Plan — Botify</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0a0f1e;color:#e5e7eb;font-family:sans-serif;min-height:100vh;padding:3rem 1.5rem;}
-.header{text-align:center;margin-bottom:3rem;}
-.header h1{font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:.5rem;}
-.header h1 em{font-style:normal;color:#00c896;}
-.header p{color:#6b7280;}
-.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;}
-.plan-card{background:#111827;border:1px solid #1f2937;border-radius:20px;padding:2rem;position:relative;}
-.plan-card.popular{border-color:#00c896;}
-.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#00c896;color:#000;font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;}
-.plan-name{font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:.5rem;}
-.plan-price{font-size:2.4rem;font-weight:800;color:#00c896;margin-bottom:.3rem;}
-.plan-price span{font-size:1rem;color:#6b7280;font-weight:400;}
-.plan-desc{font-size:.85rem;color:#6b7280;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #1f2937;}
-ul{list-style:none;margin-bottom:1.8rem;}
-ul li{font-size:.9rem;padding:.4rem 0;display:flex;align-items:center;gap:8px;}
-ul li::before{content:"✓";color:#00c896;font-weight:700;}
-ul li.no::before{content:"—";color:#6b7280;}
-ul li.no{color:#6b7280;}
-.btn{display:block;width:100%;padding:.9rem;border-radius:12px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;text-align:center;}
-.btn.primary{background:#00c896;color:#000;}
-.btn.secondary{background:transparent;color:#00c896;border:1px solid #00c896;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Plan - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00c896;
+            --green-glow: rgba(0, 200, 150, 0.4);
+            --bg: #0a0f1e;
+            --card: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --yellow: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 50% 50%, #111a33 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            padding: 4rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            max-width: 600px;
+        }
+        .header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.5px;
+        }
+        .header h1 em {
+            font-style: normal;
+            background: linear-gradient(135deg, #00c896 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 960px;
+            width: 100%;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+
+        .plan-card {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .plan-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .plan-card.popular {
+            border-color: var(--green);
+            background: rgba(17, 24, 39, 0.85);
+            box-shadow: 0 10px 30px rgba(0, 200, 150, 0.1);
+        }
+        .plan-card.popular:hover {
+            box-shadow: 0 20px 40px rgba(0, 200, 150, 0.2);
+            border-color: #00e0a8;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #00c896 0%, #00f2fe 100%);
+            color: #000;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 5px 18px;
+            border-radius: 999px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 200, 150, 0.4);
+        }
+
+        .plan-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.8rem;
+        }
+        
+        .plan-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .plan-price span {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .plan-desc {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            min-height: 48px;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 2.5rem;
+            flex-grow: 1;
+        }
+        ul li {
+            font-size: 0.95rem;
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+        }
+        ul li::before {
+            content: "✓";
+            color: var(--green);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+        ul li.no::before {
+            content: "—";
+            color: var(--muted);
+            font-weight: 400;
+        }
+        ul li.no {
+            color: var(--muted);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn.primary {
+            background: var(--green);
+            color: #000;
+            box-shadow: 0 4px 15px var(--green-glow);
+        }
+        .btn.primary:hover {
+            background: #00e0a8;
+            box-shadow: 0 6px 20px rgba(0, 200, 150, 0.6);
+            transform: translateY(-1px);
+        }
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid var(--border);
+        }
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% for category, message in messages %}
-<div style="max-width:900px;margin:0 auto 1rem;padding:.8rem 1rem;border-radius:10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);color:#00c896;text-align:center;">{{ message }}</div>
-{% endfor %}
-{% endwith %}
-<div class="header">
-<h1>Choose Your <em>Plan</em></h1>
-<p>Start free, upgrade anytime.</p>
-</div>
-<div class="plans">
-<div class="plan-card">
-<div class="plan-name">Free</div>
-<div class="plan-price">₹0 <span>/ forever</span></div>
-<div class="plan-desc">Perfect to test your bot</div>
-<ul>
-<li>1 WhatsApp Bot</li>
-<li>5 messages / day</li>
-<li>Basic auto-reply</li>
-<li>Booking management</li>
-<li class="no">No analytics</li>
-</ul>
-<form action="/select-plan/free" method="POST">
-<button type="submit" class="btn secondary">Start Free</button>
-</form>
-</div>
-<div class="plan-card popular">
-<div class="popular-badge">⭐ POPULAR</div>
-<div class="plan-name">Starter</div>
-<div class="plan-price">₹{{ plans.starter.price if plans and plans.starter else 299 }} <span>/ 30 days</span></div>
-<div class="plan-desc">Best for small businesses</div>
-<ul>
-<li>3 WhatsApp Bots</li>
-<li>{{ plans.starter.daily_limit if plans and plans.starter else 100 }} messages / day</li>
-<li>AI-powered replies</li>
-<li>Booking management</li>
-<li>Basic analytics</li>
-</ul>
-<form action="/select-plan/starter" method="POST">
-<button type="submit" class="btn primary">Get Starter →</button>
-</form>
-</div>
-<div class="plan-card">
-<div class="plan-name">Pro</div>
-<div class="plan-price">₹{{ plans.pro.price if plans and plans.pro else 799 }} <span>/ 30 days</span></div>
-<div class="plan-desc">Full power and scale</div>
-<ul>
-<li>10 WhatsApp Bots</li>
-<li>{{ plans.pro.daily_limit if plans and plans.pro else 1000 }} messages / day</li>
-<li>Advanced AI replies</li>
-<li>Full analytics</li>
-<li>Priority support</li>
-</ul>
-<form action="/select-plan/pro" method="POST">
-<button type="submit" class="btn secondary">Get Pro →</button>
-</form>
-</div>
-</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div style="max-width:960px; width: 100%; margin: 0 auto 1.5rem; padding: 12px 20px; border-radius: 12px; background: rgba(0, 200, 150, 0.1); border: 1px solid rgba(0, 200, 150, 0.3); color: var(--green); text-align: center; font-weight: 500; font-size: 14px;">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="header">
+        <h1>Choose Your <em>Plan</em></h1>
+        <p>Choose the pricing structure that fits your business needs. Upgrade or downgrade anytime.</p>
+    </div>
+
+    <div class="plans">
+        <!-- FREE PLAN -->
+        <div class="plan-card">
+            <div class="plan-name">Free</div>
+            <div class="plan-price">₹0 <span>/ forever</span></div>
+            <div class="plan-desc">Great for exploring the features and settings of Botify.</div>
+            <ul>
+                <li>1 WhatsApp Bot</li>
+                <li>5 messages / day</li>
+                <li>AI auto-reply</li>
+                <li>Booking engine</li>
+                <li class="no">Priority customer support</li>
+            </ul>
+            <form action="/select-plan/free" method="POST">
+                <button type="submit" class="btn secondary">Start Free</button>
+            </form>
+        </div>
+
+        <!-- STARTER PLAN -->
+        <div class="plan-card popular">
+            <div class="popular-badge">⭐ POPULAR</div>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">₹{{ plans.starter.price if plans and plans.starter else 49 }} <span>/ 30 days</span></div>
+            <div class="plan-desc">Ideal for small local shops and service providers starting out.</div>
+            <ul>
+                <li>3 WhatsApp Bots</li>
+                <li>{{ plans.starter.daily_limit if plans and plans.starter else 20 }} messages / day</li>
+                <li>AI custom instructions</li>
+                <li>Booking engine</li>
+                <li>Standard email support</li>
+            </ul>
+            <form action="/select-plan/starter" method="POST">
+                <button type="submit" class="btn primary">Get Starter →</button>
+            </form>
+        </div>
+
+        <!-- PRO PLAN -->
+        <div class="plan-card">
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">₹{{ plans.pro.price if plans and plans.pro else 199 }} <span>/ 30 days</span></div>
+            <div class="plan-desc">For growing businesses needing higher limits and bots.</div>
+            <ul>
+                <li>10 WhatsApp Bots</li>
+                <li>{{ plans.pro.daily_limit if plans and plans.pro else 100 }} messages / day</li>
+                <li>AI custom instructions</li>
+                <li>Booking engine</li>
+                <li>Priority support & analytics</li>
+            </ul>
+            <form action="/select-plan/pro" method="POST">
+                <button type="submit" class="btn secondary">Get Pro →</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

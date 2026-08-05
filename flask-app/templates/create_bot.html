@@ -1,37 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Create Bot - WhatsApp Bot SaaS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Bot - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial; background: #f0f2f5; margin: 0; }
-        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h1 { color: white; margin: 0; font-size: 20px; }
-        .navbar a { color: white; text-decoration: none; }
-        .container { padding: 30px; max-width: 600px; margin: auto; }
-        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { color: #25D366; margin-top: 0; }
-        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; }
-        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        textarea { height: 100px; resize: vertical; }
-        .features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-        .feature-item { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
-        .feature-item:hover { background: #f0fff4; border-color: #25D366; }
-        .feature-item input { width: auto; }
-        .btn { width: 100%; padding: 12px; background: #25D366; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; }
-        .btn:hover { background: #128C7E; }
-        .btn-back { background: #888; margin-bottom: 10px; display: inline-block; padding: 8px 16px; color: white; text-decoration: none; border-radius: 5px; }
-        .flash { color: red; text-align: center; }
+        :root {
+            --green: #00c896;
+            --green-glow: rgba(0, 200, 150, 0.4);
+            --bg: #0a0f1e;
+            --card: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --red: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #111a33 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+        }
+        .navbar h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .navbar h1 span { color: var(--green); }
+        .navbar a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color .2s;
+        }
+        .navbar a:hover { color: #fff; }
+
+        /* ── CONTAINER ── */
+        .container {
+            max-width: 640px;
+            width: 100%;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-2px);
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(13, 21, 38, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 10px var(--green-glow);
+            background: rgba(13, 21, 38, 0.9);
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── FEATURES GRID ── */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+            user-select: none;
+        }
+        .feature-item:hover {
+            background: rgba(0, 200, 150, 0.04);
+            border-color: rgba(0, 200, 150, 0.3);
+        }
+        .feature-item input {
+            display: none;
+        }
+        
+        /* Checkbox styling mimic */
+        .feature-item::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--muted);
+            border-radius: 4px;
+            display: inline-block;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .feature-item.active {
+            background: rgba(0, 200, 150, 0.08);
+            border-color: var(--green);
+            color: #fff;
+        }
+        .feature-item.active::before {
+            background: var(--green);
+            border-color: var(--green);
+            content: '✓';
+            color: #000;
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 12px;
+            text-align: center;
+        }
+
+        /* ── BUTTON ── */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 28px;
+            box-shadow: 0 4px 15px var(--green-glow);
+            transition: all 0.2s ease;
+        }
+        .btn-submit:hover {
+            background: #00b084;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 200, 150, 0.6);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .flash {
+            color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            text-align: center;
+            font-size: 13px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media(max-width: 480px) {
+            .features { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
+    <!-- NAVBAR -->
     <div class="navbar">
-        <h1>🤖 WhatsApp Bot SaaS</h1>
+        <h1>🤖 <span>Botify</span></h1>
         <a href="/logout">Logout</a>
     </div>
+
+    <!-- CONTAINER -->
     <div class="container">
         <a href="/" class="btn-back">← Back to Dashboard</a>
+        
         <div class="card">
             <h2>🤖 Create New Bot</h2>
+            
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     {% for msg in messages %}
@@ -39,32 +262,49 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+            
             <form method="POST">
-                <label>Bot Name</label>
-                <input type="text" name="bot_name" placeholder="e.g. Mukil Restaurant Bot" required>
+                <label for="bot_name">Bot Name</label>
+                <input type="text" id="bot_name" name="bot_name" placeholder="e.g. Cafe Delight Bot" required>
 
-                <label>Welcome Message</label>
-                <textarea name="welcome_message" placeholder="e.g. Hello! Welcome to Mukil Restaurant. How can I help you today?"></textarea>
+                <label for="welcome_message">Welcome Message</label>
+                <textarea id="welcome_message" name="welcome_message" placeholder="e.g. Hello! Welcome to Cafe Delight. How can I help you today?"></textarea>
+                <div class="helper-text">This is the greeting sent when a user messages the bot for the first time.</div>
 
-                <label>Features</label>
+                <label for="custom_prompt">AI Custom Instructions / System Prompt</label>
+                <textarea id="custom_prompt" name="custom_prompt" style="height: 120px;" placeholder="e.g. You are a barista assistant. Be extremely bubbly, use cafe-related jokes, and recommend our seasonal Pumpkin Spice Latte. Tell them we roast our own beans!"></textarea>
+                <div class="helper-text">Add custom rules, business context, or personality guidance to make the AI reply uniquely.</div>
+
+                <label>Enabled Features</label>
                 <div class="features">
-                    <label class="feature-item">
-                        <input type="checkbox" name="features" value="auto_reply"> 🤖 Auto Reply
+                    <label class="feature-item" id="lbl_auto_reply">
+                        <input type="checkbox" name="features" value="auto_reply" onchange="toggleFeature(this, 'lbl_auto_reply')"> 🤖 Auto Reply
                     </label>
-                    <label class="feature-item">
-                        <input type="checkbox" name="features" value="menu"> 🍽️ Menu / Price List
+                    <label class="feature-item" id="lbl_menu">
+                        <input type="checkbox" name="features" value="menu" onchange="toggleFeature(this, 'lbl_menu')"> 🍽️ Menu / Price List
                     </label>
-                    <label class="feature-item">
-                        <input type="checkbox" name="features" value="booking"> 📅 Appointment Booking
+                    <label class="feature-item" id="lbl_booking">
+                        <input type="checkbox" name="features" value="booking" onchange="toggleFeature(this, 'lbl_booking')"> 📅 Appointment Booking
                     </label>
-                    <label class="feature-item">
-                        <input type="checkbox" name="features" value="leads"> 📋 Lead Collection
+                    <label class="feature-item" id="lbl_leads">
+                        <input type="checkbox" name="features" value="leads" onchange="toggleFeature(this, 'lbl_leads')"> 📋 Lead Collection
                     </label>
                 </div>
 
-                <button type="submit" class="btn">🚀 Create Bot</button>
+                <button type="submit" class="btn-submit">🚀 Create Bot</button>
             </form>
         </div>
     </div>
+
+    <script>
+        function toggleFeature(checkbox, labelId) {
+            const label = document.getElementById(labelId);
+            if (checkbox.checked) {
+                label.classList.add('active');
+            } else {
+                label.classList.remove('active');
+            }
+        }
+    </script>
 </body>
 </html>

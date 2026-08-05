@@ -1,22 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register - WhatsApp Bot SaaS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 40px; border-radius: 10px; width: 380px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #25D366; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #25D366; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #128C7E; }
-        .flash { color: red; text-align: center; }
-        a { color: #25D366; }
-        p { text-align: center; }
+        :root {
+            --green: #00c896;
+            --green-glow: rgba(0, 200, 150, 0.4);
+            --bg: #0a0f1e;
+            --card: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: radial-gradient(circle at 50% 50%, #111a33 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .box {
+            background: var(--card);
+            backdrop-filter: blur(16px);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            border: 1px solid var(--border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(13, 21, 38, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 10px var(--green-glow);
+            background: rgba(13, 21, 38, 0.9);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 13px;
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+            box-shadow: 0 4px 15px var(--green-glow);
+            transition: all 0.2s ease;
+        }
+        button[type="submit"]:hover {
+            background: #00e0a8;
+            box-shadow: 0 6px 20px rgba(0, 200, 150, 0.6);
+            transform: translateY(-1px);
+        }
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .flash {
+            color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            text-align: center;
+            font-size: 13px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .login-link a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>🤖 Create Account</h2>
+        <div class="logo">🤖</div>
+        <h2>Create Account</h2>
+        <div class="subtitle">Join Botify to automate your WhatsApp customer service</div>
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for msg in messages %}
@@ -24,15 +152,29 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         <form method="POST">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="text" name="business_name" placeholder="Business Name (e.g. Raja Restaurant)">
-            <input type="text" name="whatsapp_number" placeholder="Your WhatsApp Number (+91XXXXXXXXXX)">
-            <button type="submit">Create Account</button>
+            <label>Name</label>
+            <input type="text" name="name" placeholder="John Doe" required>
+
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="john@example.com" required>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••" required>
+
+            <label>Business Name</label>
+            <input type="text" name="business_name" placeholder="e.g. Delicia Bakery">
+
+            <label>WhatsApp Number</label>
+            <input type="text" name="whatsapp_number" placeholder="e.g. +919876543210">
+
+            <button type="submit">Create Account →</button>
         </form>
-        <p>Already have account? <a href="/login">Login here</a></p>
+
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
     </div>
 </body>
 </html>
