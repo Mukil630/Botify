@@ -2,6 +2,7 @@ services:
   - type: web
     name: botify-flask
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn "app:create_app()"
     envVars:
@@ -27,6 +28,7 @@ services:
     name: botify-baileys
     rootDir: baileys-service
     runtime: node
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -47,3 +49,4 @@ databases:
   - name: botify-db
     databaseName: botify_db
     user: botify_user
+    plan: free
