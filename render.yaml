@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: botify-flask
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:create_app()"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: botify-db
+          property: connectionString
+      - key: BAILEYS_URL
+        fromService:
+          type: web
+          name: botify-baileys
+          property: url
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        value: mukilarasu@admin.com
+      - key: ADMIN_PASSWORD
+        value: admin@Muki123
+
+  - type: web
+    name: botify-baileys
+    rootDir: baileys-service
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FLASK_URL
+        fromService:
+          type: web
+          name: botify-flask
+          property: url
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: botify-flask
+          envVarKey: SECRET_KEY
+
+databases:
+  - name: botify-db
+    databaseName: botify_db
+    user: botify_user
