@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Info — Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wa: #25D366;
+            --bg: #0b141a;
+            --panel: #111b21;
+            --input: #2a3942;
+            --border: #233138;
+            --text: #e9edef;
+            --muted: #8696a0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+        .btn-back:hover { color: var(--text); }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            color: #fff;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p.desc {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            background: var(--input);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus { border-color: var(--wa); }
+
+        textarea { height: 90px; resize: vertical; }
+
+        .file-upload {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .file-upload input { color: #fff; font-size: 13px; }
+
+        .preview {
+            margin-top: 10px;
+            max-width: 150px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: var(--wa);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover { background: #1fae53; }
+
+        .flash {
+            background: rgba(37,211,102,0.1);
+            color: var(--wa);
+            border: 1px solid rgba(37,211,102,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="btn-back">← Back to Dashboard</a>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="card">
+            <h2>🏢 Business & Payment Settings</h2>
+            <p class="desc">Configure details for your Restaurant, Clinic, Browsing Center, or Store. This data powers your bot.</p>
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Payment UPI ID (GPay / PhonePe etc)</label>
+                    <input type="text" name="upi_id" placeholder="e.g. yourshop@upi" value="{{ business.upi_id if business else '' }}">
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Customers will see a Pay button linking to this UPI ID after ordering.</p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label>🏭 Business Industry</label>
+                    <select id="industrySelector" style="width:100%; background:var(--input); border:1px solid transparent; border-radius:8px; padding:12px 16px; color:#fff; font-size:14px; outline:none; margin-bottom:12px;">
+                        <option value="">-- Select Your Industry --</option>
+                        <option value="food">🍽️ Restaurant & Food Delivery</option>
+                        <option value="medical">⚕️ Clinic & Medical Services</option>
+                        <option value="realestate">🏠 Real Estate & Properties</option>
+                        <option value="tech">💻 Tech SaaS & Software</option>
+                        <option value="retail">🛍️ Retail & Physical Products</option>
+                        <option value="consulting">💼 Professional Consulting</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🧠 Custom AI Instructions (Groq Prompt)</label>
+                    <textarea name="extra_info" id="extraInfoPrompt" placeholder="Tell the AI exactly how to behave..." style="height:120px;">{{ business.extra_info if business and business.extra_info else '' }}</textarea>
+                    <p style="font-size: 11px; color: var(--wa); margin-top: 6px;">💡 This automatically programs the Groq AI API. You can manually tweak this text to be perfect!</p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label>👋 First-Time Welcome Image</label>
+                    <div class="file-upload">
+                        <input type="file" name="welcome_image" accept="image/*">
+                        {% if business and business.welcome_image %}
+                            <br><img src="{{ business.welcome_image }}" class="preview">
+                        {% endif %}
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Sent automatically to a customer when they message your bot for the absolute first time.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Catalog / Menu Image</label>
+                    <div class="file-upload">
+                        <input type="file" name="menu_image" accept="image/*">
+                        {% if business and business.menu_image %}
+                            <br><img src="{{ business.menu_image }}" class="preview">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Order Completed / Thanks Image</label>
+                    <div class="file-upload">
+                        <input type="file" name="thanks_image" accept="image/*">
+                        {% if business and business.thanks_image %}
+                            <br><img src="{{ business.thanks_image }}" class="preview">
+                        {% endif %}
+                    </div>
+                    <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">Sent automatically when a customer says "order over" or finishes checkout.</p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" placeholder="123 Main St, City">{{ business.address if business else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Timings</label>
+                    <input type="text" name="timings" placeholder="Mon-Sat: 9AM - 9PM" value="{{ business.timings if business else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Phone</label>
+                    <input type="text" name="contact_phone" placeholder="+91 9876543210" value="{{ business.contact_phone if business else '' }}">
+                </div>
+
+                <button type="submit" class="btn-submit">Save Settings</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const prompts = {
+            food: "I am a Restaurant/Food Delivery business. Be appetizing and friendly. Ask customers if they want pickup or delivery. Help them choose from the catalog.",
+            medical: "I am a Medical Clinic. Be highly professional, empathetic, and confidential. Ask patients about their symptoms briefly before asking them to book an appointment.",
+            realestate: "I am a Real Estate agency. Be eager and professional. Ask the user what kind of property they are looking to buy or rent, and what their budget is.",
+            tech: "I am a Tech/SaaS company. Be energetic and knowledgeable. Encourage them to book a demo call or purchase our software plans from the catalog.",
+            retail: "I am a Retail Store. Be helpful and consumer-friendly. Ask what products they are looking for and inform them about our catalog items.",
+            consulting: "I am a Professional Consulting firm. Be extremely corporate and polite. Find out what business challenges they face before booking a consultation call."
+        };
+
+        document.getElementById('industrySelector').addEventListener('change', function(e) {
+            const val = e.target.value;
+            const promptBox = document.getElementById('extraInfoPrompt');
+            if (val && prompts[val]) {
+                // Prepend or replace text
+                promptBox.value = "INDUSTRY: " + this.options[this.selectedIndex].text + "\n\nAI BEHAVIOR RULES:\n" + prompts[val] + "\n\n(Add any custom rules here...)";
+            }
+        });
+    </script>
+</body>
+</html>

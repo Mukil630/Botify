@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details - Admin Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .navbar h1 { font-size: 22px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 14px; }
+        .nav-links a:hover { text-decoration: underline; }
+        .container { padding: 30px; max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #25D366; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .page-title { color: #333; font-size: 28px; margin-bottom: 30px; font-weight: bold; }
+        
+        .section { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .section-title { color: #333; font-size: 18px; font-weight: bold; margin-bottom: 20px; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-row { padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #888; font-size: 12px; margin-bottom: 4px; }
+        .info-value { color: #333; font-size: 16px; font-weight: bold; }
+        
+        .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-free { background: #e8e8e8; color: #666; }
+        .badge-starter { background: #e3f2fd; color: #1976d2; }
+        .badge-pro { background: #f3e5f5; color: #7b1fa2; }
+        .badge-business { background: #fff3e0; color: #e65100; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-primary { background: #25D366; color: white; }
+        .btn-danger { background: #ff4444; color: white; }
+        .btn-info { background: #1976d2; color: white; }
+        .btn-primary:hover { background: #128C7E; }
+        .btn-danger:hover { background: #cc0000; }
+        .btn-info:hover { background: #1565c0; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f5f5f5; padding: 10px; text-align: left; font-weight: bold; font-size: 12px; border-bottom: 2px solid #eee; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .modal-buttons { margin-top: 20px; display: flex; gap: 10px; }
+        .modal-buttons button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .modal-buttons .cancel { background: #ddd; color: #333; }
+        .modal-buttons .confirm { background: #ff4444; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>⚙️ Admin Dashboard</h1>
+    <div class="nav-links">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/revenue">Revenue</a>
+        <a href="/admin/support">Support</a>
+        <a href="/admin/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <a href="/admin/users" class="back-link">← Back to Users</a>
+    <div class="page-title">{{ user.name }}</div>
+
+    <!-- User Info -->
+    <div class="section">
+        <div class="section-title">👤 User Information</div>
+        <div class="info-grid">
+            <div class="info-row">
+                <div class="info-label">Name</div>
+                <div class="info-value">{{ user.name }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{ user.email }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Business</div>
+                <div class="info-value">{{ user.business_name or 'N/A' }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">WhatsApp</div>
+                <div class="info-value">{{ user.whatsapp_number or 'N/A' }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Spent</div>
+                <div class="info-value">₹{{ total_spent }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Joined</div>
+                <div class="info-value">{{ user.created_at.strftime('%d-%m-%Y') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Info -->
+    <div class="section">
+        <div class="section-title">📊 Current Plan</div>
+        {% if plan %}
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-label">Plan</div>
+                    <div class="info-value"><span class="badge badge-{{ plan.plan_name | lower }}">{{ plan.plan_name | upper }}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Daily Limit</div>
+                    <div class="info-value">{{ plan.daily_limit }} messages/day</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Expires</div>
+                    <div class="info-value">{% if plan.expires_at %}{{ plan.expires_at.strftime('%d-%m-%Y') }}{% else %}Never{% endif %}</div>
+                </div>
+            </div>
+        {% else %}
+            <p>No active plan</p>
+        {% endif %}
+        
+        <div class="actions">
+            <button class="btn btn-primary" onclick="upgradeModal('starter')">Upgrade to Starter</button>
+            <button class="btn btn-info" onclick="upgradeModal('pro')">Upgrade to Pro</button>
+            <button class="btn btn-info" onclick="upgradeModal('business')">Upgrade to Business</button>
+            {% if plan and plan.plan_name != 'free' %}
+                <form method="POST" action="/admin/manage/{{ user.id }}/reset-plan" style="display: inline;">
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('Reset to Free plan?')">Reset to Free</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Usage Stats -->
+    <div class="section">
+        <div class="section-title">📈 Usage Statistics</div>
+        <div class="info-grid">
+            <div class="info-row">
+                <div class="info-label">Active Bots</div>
+                <div class="info-value">{{ bots | length }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Total Bookings</div>
+                <div class="info-value">{{ bookings }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Conversations</div>
+                <div class="info-value">{{ conversations }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Payments Made</div>
+                <div class="info-value">{{ payments | length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="section">
+        <div class="section-title">💳 Payment History</div>
+        {% if payments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td><strong>{{ payment.plan }}</strong></td>
+                        <td>₹{{ payment.amount }}</td>
+                        <td><span class="badge" style="background: {% if payment.status == 'COMPLETED' %}#e8f5e9; color: #25D366;{% else %}#fff3cd; color: #856404;{% endif %}">{{ payment.status }}</span></td>
+                        <td>{{ payment.date }}</td>
+                        <td>{{ payment.completed }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No payments</p>
+        {% endif %}
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="section" style="border-top: 3px solid #ff4444;">
+        <div class="section-title" style="color: #ff4444;">⚠️ Danger Zone</div>
+        <button class="btn btn-danger" onclick="deleteModal()">Delete User & All Data</button>
+    </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal" id="upgradeModal">
+    <div class="modal-content">
+        <div class="modal-title">Upgrade User Plan</div>
+        <p id="modalMessage" style="margin-bottom: 20px; color: #666;"></p>
+        <form id="upgradeForm" method="POST" style="display: none;"></form>
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeModal('upgradeModal')">Cancel</button>
+            <button class="confirm" onclick="confirmUpgrade()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <div class="modal-title" style="color: #ff4444;">Delete User?</div>
+        <p style="margin-bottom: 20px; color: #666;">This will permanently delete <strong>{{ user.name }}</strong> and ALL their data (bots, payments, conversations, bookings). This cannot be undone!</p>
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeModal('deleteModal')">Cancel</button>
+            <form method="POST" action="/admin/manage/{{ user.id }}/delete" style="flex: 1;">
+                <button type="submit" class="confirm" style="width: 100%;">Yes, Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let upgradePlan = '';
+
+function upgradeModal(plan) {
+    upgradePlan = plan;
+    const planName = plan.toUpperCase();
+    document.getElementById('modalMessage').textContent = `Are you sure you want to upgrade this user to ${planName} plan? This will reset the plan to fresh 30 days.`;
+    document.getElementById('upgradeModal').classList.add('active');
+}
+
+function confirmUpgrade() {
+    if (upgradePlan) {
+        const url = `/admin/manage/{{ user.id }}/upgrade-plan/${upgradePlan}`;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function deleteModal() {
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+</script>
+
+</body>
+</html>

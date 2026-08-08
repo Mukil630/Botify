@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat Inbox — Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wa: #25D366; --bg: #0b141a; --panel: #111b21; --input: #2a3942;
+            --border: #233138; --text: #e9edef; --muted: #8696a0; --msg-in: #202c33; --msg-out: #005c4b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        
+        .layout { display: flex; height: 100vh; }
+        
+        /* SIDEBAR (Customer List) */
+        .sidebar { width: 350px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 16px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header h2 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .sidebar-header a { color: var(--wa); text-decoration: none; font-size: 14px; font-weight: 500; }
+        
+        .search-box { padding: 12px; }
+        .search-box input { width: 100%; background: var(--input); border: none; padding: 10px 14px; border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif; outline: none; box-sizing: border-box; }
+        
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--bg); }
+        .chat-item:hover, .chat-item.active { background: var(--input); }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--wa), #128C7E); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; font-weight: bold; flex-shrink: 0; }
+        
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; }
+        .chat-time { font-size: 12px; color: var(--muted); font-weight: 400; }
+        .chat-preview { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* MAIN CHAT AREA */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png') center/cover; }
+        
+        .chat-header { padding: 16px 24px; background: var(--panel); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 10; }
+        .header-user { display: flex; align-items: center; gap: 14px; }
+        .header-name { font-size: 16px; font-weight: 600; }
+        .header-phone { font-size: 13px; color: var(--muted); }
+        
+        .toggle-bot { background: rgba(37,211,102,0.1); border: 1px solid var(--wa); color: var(--wa); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+        .toggle-bot.paused { background: rgba(239,68,68,0.1); border-color: #ef4444; color: #ef4444; }
+        
+        .messages-container { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        
+        .msg { max-width: 65%; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; position: relative; }
+        .msg.in { align-self: flex-start; background: var(--msg-in); border-top-left-radius: 0; }
+        .msg.out { align-self: flex-end; background: var(--msg-out); border-top-right-radius: 0; }
+        
+        .msg-time { font-size: 11px; color: rgba(255,255,255,0.6); float: right; margin: 8px 0 -4px 8px; }
+        .msg-sender { font-size: 12px; color: var(--wa); font-weight: 600; margin-bottom: 4px; }
+        
+        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); background: var(--panel); }
+        .empty-state svg { width: 80px; height: 80px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state h3 { font-size: 24px; font-weight: 300; margin-bottom: 8px; }
+        
+        /* INPUT AREA */
+        .input-area { background: var(--panel); padding: 16px 24px; display: flex; gap: 12px; align-items: center; }
+        .input-area input { flex: 1; background: var(--input); border: none; padding: 14px 20px; border-radius: 24px; color: #fff; font-size: 15px; font-family: inherit; outline: none; }
+        .btn-send { background: var(--wa); width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: #fff; transition: transform 0.2s; }
+        .btn-send:hover { transform: scale(1.05); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374045; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><span style="font-size:24px;">💬</span> Live Inbox</h2>
+                <a href="/">← Dashboard</a>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search chats..." onkeyup="filterChats()">
+            </div>
+            <div class="chat-list" id="chatList">
+                <!-- Chat items will be loaded here dynamically -->
+                <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 14px;">Loading chats...</div>
+            </div>
+        </div>
+
+        <!-- MAIN CHAT -->
+        <div class="chat-area" id="chatArea" style="display: none;">
+            <div class="chat-header">
+                <div class="header-user">
+                    <div class="avatar" id="headerAvatar">U</div>
+                    <div class="chat-info">
+                        <div class="header-name" id="headerName">Customer Name</div>
+                        <div class="header-phone" id="headerPhone">+91 XXXXXXXXXX</div>
+                    </div>
+                </div>
+                <button class="toggle-bot" id="btnToggleBot" onclick="toggleBot()">
+                    🤖 Bot: Active
+                </button>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <!-- Messages will be loaded here -->
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="msgInput" placeholder="Type a message to manually reply..." onkeypress="handleEnter(event)">
+                <button class="btn-send" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" id="emptyState">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <h3>Botify Live Inbox</h3>
+            <p>Select a chat from the left to view messages or reply manually.</p>
+        </div>
+    </div>
+
+    <script>
+        let currentPhone = null;
+        let isBotPaused = false;
+        let chatPollTimer = null;
+
+        // Auto format time
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function loadChats() {
+            try {
+                const res = await fetch('/api/live-inbox/chats');
+                const data = await res.json();
+                
+                const html = data.chats.map(c => `
+                    <div class="chat-item ${currentPhone === c.phone ? 'active' : ''}" onclick="openChat('${c.phone}', '${c.name || 'Customer'}')">
+                        <div class="avatar">${(c.name || c.phone).charAt(0).toUpperCase()}</div>
+                        <div class="chat-info">
+                            <div class="chat-name">${c.name || c.phone} <span class="chat-time">${formatTime(c.last_time)}</span></div>
+                            <div class="chat-preview">${c.last_msg || 'Image / File'}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('chatList').innerHTML = html || '<div style="padding: 20px; text-align: center; color: var(--muted);">No conversations yet.</div>';
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function openChat(phone, name) {
+            currentPhone = phone;
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('chatArea').style.display = 'flex';
+            
+            document.getElementById('headerName').innerText = name || phone;
+            document.getElementById('headerPhone').innerText = phone;
+            document.getElementById('headerAvatar').innerText = (name || phone).charAt(0).toUpperCase();
+            
+            // Highlight active in sidebar
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget?.classList.add('active');
+
+            await fetchMessages();
+            checkBotStatus();
+            
+            if (chatPollTimer) clearInterval(chatPollTimer);
+            chatPollTimer = setInterval(fetchMessages, 3000); // Check for new messages every 3s
+        }
+
+        async function fetchMessages() {
+            if (!currentPhone) return;
+            try {
+                const res = await fetch(`/api/live-inbox/messages/${currentPhone}`);
+                const data = await res.json();
+                
+                const container = document.getElementById('messagesContainer');
+                
+                // Only update if we have new messages (basic length check for efficiency)
+                if (container.children.length === data.messages.length) return;
+                
+                let html = '';
+                data.messages.forEach(m => {
+                    const isIn = m.sender === 'customer';
+                    const senderLabel = m.sender === 'bot' ? '🤖 Bot' : (m.sender === 'business' ? '🏢 You' : '');
+                    html += `
+                        <div class="msg ${isIn ? 'in' : 'out'}">
+                            ${!isIn ? `<div class="msg-sender">${senderLabel}</div>` : ''}
+                            ${m.text}
+                            <span class="msg-time">${formatTime(m.time)}</span>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            } catch (err) { }
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if (!text || !currentPhone) return;
+            
+            input.value = '';
+            
+            try {
+                await fetch('/api/live-inbox/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: currentPhone, message: text })
+                });
+                
+                // Immediately pause bot if business owner takes over manually
+                if (!isBotPaused) await toggleBot(true);
+                
+                await fetchMessages();
+            } catch (err) {
+                alert('Failed to send message');
+            }
+        }
+
+        async function toggleBot(forcePause = null) {
+            const desiredPause = forcePause !== null ? forcePause : !isBotPaused;
+            try {
+                const res = await fetch('/api/live-inbox/toggle-bot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: currentPhone, paused: desiredPause })
+                });
+                const data = await res.json();
+                updateBotBtn(data.paused);
+            } catch (err) { }
+        }
+
+        async function checkBotStatus() {
+            try {
+                const res = await fetch(`/api/live-inbox/bot-status/${currentPhone}`);
+                const data = await res.json();
+                updateBotBtn(data.paused);
+            } catch (err) { }
+        }
+
+        function updateBotBtn(paused) {
+            isBotPaused = paused;
+            const btn = document.getElementById('btnToggleBot');
+            if (paused) {
+                btn.className = 'toggle-bot paused';
+                btn.innerHTML = '⏸️ Bot: Paused (Manual Mode)';
+            } else {
+                btn.className = 'toggle-bot';
+                btn.innerHTML = '🤖 Bot: Active (AI Mode)';
+            }
+        }
+
+        function filterChats() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.chat-item').forEach(el => {
+                const text = el.innerText.toLowerCase();
+                el.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        // Initialize
+        loadChats();
+        setInterval(loadChats, 10000); // refresh list every 10s
+    </script>
+</body>
+</html>

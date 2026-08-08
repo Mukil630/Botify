@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Menu Item - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--green:#00c896;--green-dark:#00a07a;--bg:#0a0f1e;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .navbar{background:rgba(17,24,39,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;z-index:100;}
+        .navbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;}
+        .navbar-brand span{color:var(--green);}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;}
+        .container{max-width:560px;margin:40px auto;padding:0 20px;}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;}
+        h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;}
+        .subtitle{font-size:13px;color:var(--muted);margin-bottom:24px;}
+        .form-group{margin-bottom:16px;}
+        label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+        input,textarea,select{width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color .2s;}
+        input:focus,textarea:focus,select:focus{outline:none;border-color:var(--green);}
+        textarea{resize:vertical;min-height:80px;}
+        select option{background:#111827;}
+        .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+        .btn{width:100%;padding:13px;background:var(--green);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .2s;}
+        .btn:hover{background:var(--green-dark);}
+        .btn-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;margin-bottom:20px;}
+        .btn-back:hover{color:var(--text);}
+        .flash{padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:500;background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.2);}
+        /* Image preview */
+        .img-upload-area{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+        .img-upload-area:hover{border-color:rgba(0,200,150,.4);background:rgba(0,200,150,.03);}
+        .img-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+        .img-preview{display:none;width:100%;height:160px;object-fit:cover;border-radius:10px;margin-top:10px;}
+        .img-upload-area p{font-size:13px;color:var(--muted);}
+        .img-upload-area span{font-size:32px;display:block;margin-bottom:8px;}
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <a href="/menu">← Back to Menu</a>
+</div>
+
+<div class="container">
+    {% with messages = get_flashed_messages() %}{% if messages %}
+        {% for msg in messages %}<div class="flash">✅ {{ msg }}</div>{% endfor %}
+    {% endif %}{% endwith %}
+
+    <a href="/menu" class="btn-back">← Back to Menu</a>
+
+    <div class="card">
+        <h2>➕ Add Menu Item</h2>
+        <p class="subtitle">Customers type "menu" → bot shows all your items automatically!</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>🛎️ Item / Service Name *</label>
+                <input type="text" name="service_name" placeholder="e.g. Chicken Biryani / Haircut / Room Booking" required>
+            </div>
+
+            <div class="form-group">
+                <label>📂 Category</label>
+                <input type="text" name="category" placeholder="e.g. Food, Drinks, Services, Room" value="General">
+                <p class="hint">Used to group items in the menu listing</p>
+            </div>
+
+            <div class="form-group">
+                <label>💰 Price</label>
+                <input type="text" name="price" placeholder="e.g. 299 or 200-500 or Free">
+                <p class="hint">Leave empty if price varies per customer</p>
+            </div>
+
+            <div class="form-group">
+                <label>📝 Description</label>
+                <textarea name="description" placeholder="e.g. Full plate with raita and dessert / 30 min session / AC room with WiFi"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🖼️ Item Image (optional)</label>
+                <div class="img-upload-area" onclick="document.getElementById('imgInput').click()">
+                    <span>📷</span>
+                    <p>Click to upload image</p>
+                    <p style="font-size:11px;margin-top:4px;">JPG, PNG up to 5MB</p>
+                    <input type="file" name="image" id="imgInput" accept="image/*" style="display:none" onchange="previewImg(this)">
+                </div>
+                <img id="imgPreview" class="img-preview" alt="Preview">
+            </div>
+
+            <button type="submit" class="btn">➕ Add to Menu</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function previewImg(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById('imgPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botify — Create Your Account</title>
+    <meta name="description" content="Create your free Botify account and start automating your WhatsApp business today.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --wa-green:      #25D366;
+            --wa-dark-green: #128C7E;
+            --wa-teal:       #075E54;
+            --wa-bg:         #0b141a;
+            --wa-panel:      #111b21;
+            --wa-input:      #2a3942;
+            --wa-border:     #233138;
+            --wa-header:     #1f2c33;
+            --wa-text:       #e9edef;
+            --wa-muted:      #8696a0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--wa-bg);
+            color: var(--wa-text);
+            overflow: hidden;
+        }
+
+        /* ═══ BACKGROUND ═══ */
+        .wa-pattern {
+            position: fixed; inset: 0; z-index: 0; opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2325D366'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .wa-top-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 140px;
+            background: linear-gradient(135deg, var(--wa-teal), var(--wa-dark-green), #0a6b5e);
+            z-index: 0;
+        }
+        #particleCanvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+        /* ═══ LAYOUT ═══ */
+        .page { display: flex; height: 100vh; position: relative; z-index: 2; }
+
+        /* ── LEFT HERO ── */
+        .hero {
+            flex: 1;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 50px;
+            position: relative;
+        }
+
+        /* Floating icons */
+        .floating-icons { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+        .fi { position: absolute; font-size: 24px; opacity: 0.06; animation: floatRandom 18s ease-in-out infinite; }
+        .fi:nth-child(1){top:8%;left:12%;animation-delay:0s;font-size:28px}
+        .fi:nth-child(2){top:22%;left:78%;animation-delay:-4s;font-size:22px}
+        .fi:nth-child(3){top:55%;left:8%;animation-delay:-8s;font-size:30px}
+        .fi:nth-child(4){top:72%;left:70%;animation-delay:-11s;font-size:20px}
+        .fi:nth-child(5){top:88%;left:35%;animation-delay:-14s;font-size:26px}
+
+        .hero-content {
+            text-align: center;
+            animation: fadeUp 0.7s ease both;
+        }
+        .hero-emoji {
+            font-size: 72px;
+            margin-bottom: 20px;
+            animation: bounceIn 0.6s ease;
+        }
+        .hero-title {
+            font-size: clamp(28px, 3.5vw, 44px);
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .hero-title .green {
+            color: var(--wa-green);
+        }
+        .hero-desc {
+            font-size: 16px;
+            color: var(--wa-muted);
+            line-height: 1.7;
+            max-width: 440px;
+            margin: 0 auto 40px;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            animation: fadeUp 0.8s ease 0.2s both;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(37,211,102,0.06);
+            border: 1px solid rgba(37,211,102,0.15);
+            border-radius: 14px;
+            padding: 14px 20px;
+            transition: all 0.3s;
+        }
+        .step:hover {
+            background: rgba(37,211,102,0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .step-num {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--wa-green), var(--wa-teal));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800; color: #fff;
+            flex-shrink: 0;
+        }
+        .step-info {}
+        .step-title { font-size: 13px; font-weight: 700; color: var(--wa-text); }
+        .step-desc { font-size: 11px; color: var(--wa-muted); }
+
+        /* Free plan badge */
+        .free-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37,211,102,0.1);
+            border: 1px solid rgba(37,211,102,0.3);
+            border-radius: 100px;
+            padding: 10px 22px;
+            margin-top: 36px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--wa-green);
+            animation: fadeUp 0.9s ease 0.3s both, pulseGlow 3s ease-in-out infinite;
+        }
+
+        /* ═══ RIGHT: FORM ═══ */
+        .form-panel {
+            width: 480px; min-width: 480px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 36px 52px;
+            background: var(--wa-panel);
+            border-left: 1px solid var(--wa-border);
+            position: relative;
+            animation: slideRight 0.7s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .form-panel::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--wa-teal), var(--wa-green), var(--wa-teal));
+            background-size: 200% 100%;
+            animation: shimmerBar 3s linear infinite;
+        }
+        .form-inner { width: 100%; max-width: 370px; }
+
+        /* Brand */
+        .brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+        .brand-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--wa-green), var(--wa-teal));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 6px 24px rgba(37,211,102,0.35);
+            animation: pulseIcon 3s ease-in-out infinite;
+        }
+        .brand-name { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
+        .brand-tag { font-size: 11px; color: var(--wa-muted); margin-top: 2px; }
+
+        .form-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .form-desc { font-size: 13px; color: var(--wa-muted); margin-bottom: 24px; }
+
+        /* Flash */
+        .flash-msg {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px; padding: 11px 14px;
+            font-size: 13px; color: #fca5a5;
+            margin-bottom: 14px;
+            animation: shake 0.4s;
+        }
+
+        /* Fields */
+        .fld { margin-bottom: 14px; }
+        .fld label { display: block; font-size: 12px; font-weight: 600; color: var(--wa-muted); margin-bottom: 6px; }
+        .fld-wrap { position: relative; }
+        .fld-ico {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 15px; color: #4e5d66; pointer-events: none; transition: color 0.25s;
+        }
+        .fld-input {
+            width: 100%; padding: 12px 14px 12px 44px;
+            background: var(--wa-input);
+            border: 1.5px solid transparent;
+            border-radius: 10px;
+            color: var(--wa-text);
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            transition: all 0.25s; outline: none;
+        }
+        .fld-input::placeholder { color: #5a6b75; }
+        .fld-input:hover { border-color: rgba(37,211,102,0.15); }
+        .fld-input:focus {
+            border-color: var(--wa-green);
+            box-shadow: 0 0 0 3px rgba(37,211,102,0.1), 0 0 16px rgba(37,211,102,0.06);
+        }
+        .fld-wrap:focus-within .fld-ico { color: var(--wa-green); }
+
+        .eye-btn {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #5a6b75;
+            cursor: pointer; font-size: 16px; transition: color 0.2s;
+        }
+        .eye-btn:hover { color: var(--wa-green); }
+
+        /* CTA */
+        .btn-register {
+            width: 100%; padding: 14px; margin-top: 6px;
+            background: linear-gradient(135deg, var(--wa-green), var(--wa-dark-green));
+            color: #fff; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+        }
+        .btn-register::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 200%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,211,102,0.45); }
+        .btn-register:active { transform: translateY(0); }
+        .btn-register .arr { display: inline-block; margin-left: 8px; transition: transform 0.3s; }
+        .btn-register:hover .arr { transform: translateX(5px); }
+
+        .login-row { text-align: center; margin-top: 20px; font-size: 13px; color: var(--wa-muted); }
+        .login-row a { color: var(--wa-green); font-weight: 700; text-decoration: none; }
+        .login-row a:hover { text-decoration: underline; }
+
+        /* Free plan banner */
+        .plan-banner {
+            margin-top: 20px;
+            background: rgba(37,211,102,0.06);
+            border: 1px solid rgba(37,211,102,0.15);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .plan-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--wa-green), var(--wa-teal));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .plan-info {}
+        .plan-title { font-size: 13px; font-weight: 700; color: var(--wa-green); }
+        .plan-desc { font-size: 11px; color: var(--wa-muted); margin-top: 2px; }
+
+        .sec-note { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); font-size:10px; color:#3b4f5a; display:flex;align-items:center;gap:5px;white-space:nowrap; }
+
+        /* ═══ ANIMATIONS ═══ */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes slideRight { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes bounceIn { 0%{transform:scale(0.3);opacity:0} 50%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        @keyframes floatRandom { 0%{transform:translate(0,0)rotate(0)}25%{transform:translate(15px,-20px)rotate(10deg)}50%{transform:translate(-10px,10px)rotate(-5deg)}75%{transform:translate(20px,15px)rotate(8deg)}100%{transform:translate(0,0)rotate(0)} }
+        @keyframes shimmer { 0%{left:-100%} 100%{left:100%} }
+        @keyframes shimmerBar { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+        @keyframes pulseIcon { 0%,100%{box-shadow:0 6px 24px rgba(37,211,102,0.35)} 50%{box-shadow:0 6px 32px rgba(37,211,102,0.55)} }
+        @keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,0)} 50%{box-shadow:0 0 20px rgba(37,211,102,0.2)} }
+        @keyframes shake { 0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)} }
+
+        @media (max-width:1024px) {
+            .hero{display:none}
+            .form-panel{width:100%;min-width:100%}
+        }
+    </style>
+</head>
+<body>
+
+<div class="wa-pattern"></div>
+<div class="wa-top-bar"></div>
+<canvas id="particleCanvas"></canvas>
+
+<div class="page">
+    <!-- ═══ LEFT: HERO ═══ -->
+    <div class="hero">
+        <div class="floating-icons">
+            <span class="fi">💬</span>
+            <span class="fi">📱</span>
+            <span class="fi">🤖</span>
+            <span class="fi">📦</span>
+            <span class="fi">✅</span>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-emoji">🚀</div>
+            <h1 class="hero-title">
+                Start Automating<br>
+                Your <span class="green">WhatsApp</span><br>
+                Business Today
+            </h1>
+            <p class="hero-desc">
+                Set up your AI-powered WhatsApp chatbot in under 2 minutes.
+                No coding required. Just scan, connect, and go live!
+            </p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-info">
+                        <div class="step-title">Create Account</div>
+                        <div class="step-desc">Quick 30-second signup</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-info">
+                        <div class="step-title">Scan QR Code</div>
+                        <div class="step-desc">Connect your WhatsApp</div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-info">
+                        <div class="step-title">Go Live! 🎉</div>
+                        <div class="step-desc">Bot starts replying instantly</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="free-badge">
+                🎁 Start Free — 8 Messages/Day · No Credit Card
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ RIGHT: FORM ═══ -->
+    <div class="form-panel">
+        <div class="form-inner">
+            <div class="brand-row">
+                <div class="brand-icon">🤖</div>
+                <div>
+                    <div class="brand-name">Botify</div>
+                    <div class="brand-tag">💬 WhatsApp Automation Platform</div>
+                </div>
+            </div>
+
+            <div class="form-title">Create Your Account ✨</div>
+            <div class="form-desc">Get your AI WhatsApp bot up in minutes</div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="flash-msg">⚠️ {{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" id="regForm">
+                <div class="fld">
+                    <label for="name">Your Name</label>
+                    <div class="fld-wrap">
+                        <input type="text" id="name" name="name" class="fld-input"
+                            placeholder="John Doe" required>
+                        <span class="fld-ico">👤</span>
+                    </div>
+                </div>
+
+                <div class="fld">
+                    <label for="email">Email Address</label>
+                    <div class="fld-wrap">
+                        <input type="email" id="email" name="email" class="fld-input"
+                            placeholder="you@business.com" required>
+                        <span class="fld-ico">✉️</span>
+                    </div>
+                </div>
+
+                <div class="fld">
+                    <label for="password">Password</label>
+                    <div class="fld-wrap">
+                        <input type="password" id="password" name="password" class="fld-input"
+                            placeholder="Create a strong password" required>
+                        <span class="fld-ico">🔒</span>
+                        <button type="button" class="eye-btn" onclick="togglePw()" id="eyeBtn">👁️</button>
+                    </div>
+                </div>
+
+                <div class="fld">
+                    <label for="biz">Business Name</label>
+                    <div class="fld-wrap">
+                        <input type="text" id="biz" name="business_name" class="fld-input"
+                            placeholder="e.g. Raja Restaurant">
+                        <span class="fld-ico">🏪</span>
+                    </div>
+                </div>
+
+                <div class="fld">
+                    <label for="wa">WhatsApp Number</label>
+                    <div class="fld-wrap">
+                        <input type="text" id="wa" name="whatsapp_number" class="fld-input"
+                            placeholder="+91 98765 43210">
+                        <span class="fld-ico">📱</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-register" id="regBtn">
+                    Create Free Account <span class="arr">→</span>
+                </button>
+            </form>
+
+            <div class="login-row">
+                Already have an account? <a href="/login">Sign in here</a>
+            </div>
+
+            <div class="plan-banner">
+                <div class="plan-icon">🎁</div>
+                <div class="plan-info">
+                    <div class="plan-title">Free Plan Included</div>
+                    <div class="plan-desc">8 messages/day · 1 bot · No credit card needed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sec-note">🔒 Your data is secure · End-to-end encrypted</div>
+    </div>
+</div>
+
+<script>
+    /* ═══ PARTICLES ═══ */
+    const cvs=document.getElementById('particleCanvas');
+    const ctx=cvs.getContext('2d');
+    let W,H; const pts=[];
+    function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight}
+    resize(); addEventListener('resize',resize);
+    for(let i=0;i<50;i++){
+        pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.5,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,a:Math.random()*0.4+0.1});
+    }
+    let mx=null,my=null;
+    addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+    function draw(){
+        ctx.clearRect(0,0,W,H);
+        pts.forEach(p=>{
+            ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle=`rgba(37,211,102,${p.a})`;ctx.fill();
+            ctx.beginPath();ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);
+            ctx.fillStyle=`rgba(37,211,102,${p.a*0.08})`;ctx.fill();
+            p.x+=p.vx;p.y+=p.vy;
+            if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+        });
+        for(let i=0;i<pts.length;i++){
+            for(let j=i+1;j<pts.length;j++){
+                const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;
+                const d=Math.sqrt(dx*dx+dy*dy);
+                if(d<130){
+                    ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+                    ctx.strokeStyle=`rgba(37,211,102,${0.06*(1-d/130)})`;ctx.lineWidth=0.5;ctx.stroke();
+                }
+            }
+            if(mx!==null){
+                const dx=pts[i].x-mx,dy=pts[i].y-my;
+                const d=Math.sqrt(dx*dx+dy*dy);
+                if(d<180){
+                    ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(mx,my);
+                    ctx.strokeStyle=`rgba(37,211,102,${0.1*(1-d/180)})`;ctx.lineWidth=0.4;ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    /* ═══ PW TOGGLE ═══ */
+    function togglePw(){
+        const i=document.getElementById('password'),b=document.getElementById('eyeBtn');
+        if(i.type==='password'){i.type='text';b.textContent='🙈'}
+        else{i.type='password';b.textContent='👁️'}
+    }
+
+    /* ═══ SUBMIT ═══ */
+    document.getElementById('regForm').addEventListener('submit',function(){
+        const b=document.getElementById('regBtn');
+        b.innerHTML='⏳ Creating account...';
+        b.style.opacity='0.7';b.disabled=true;
+    });
+
+    /* ═══ LABEL FOCUS ═══ */
+    document.querySelectorAll('.fld-input').forEach(inp=>{
+        inp.addEventListener('focus',function(){
+            const l=this.closest('.fld')?.querySelector('label');
+            if(l)l.style.color='#25D366';
+        });
+        inp.addEventListener('blur',function(){
+            const l=this.closest('.fld')?.querySelector('label');
+            if(l)l.style.color='#8696a0';
+        });
+    });
+</script>
+</body>
+</html>

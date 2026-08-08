@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root{--green:#00c896;--green-dark:#00a07a;--bg:#0a0f1e;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;--red:#ef4444;--yellow:#f59e0b;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .navbar{background:rgba(17,24,39,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;z-index:100;}
+        .navbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;}
+        .navbar-brand span{color:var(--green);}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;}
+        .container{max-width:980px;margin:0 auto;padding:28px 20px;}
+        .page-header{margin-bottom:24px;}
+        .page-header h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+        .page-header p{font-size:13px;color:var(--muted);margin-top:3px;}
+
+        /* Stat cards */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+        .stat-icon{font-size:24px;margin-bottom:8px;}
+        .stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;}
+        .stat-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+        .stat-card.green .stat-val{color:var(--green);}
+        .stat-card.yellow .stat-val{color:var(--yellow);}
+
+        /* Charts grid */
+        .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+        .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+        .chart-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:16px;}
+        .chart-card.full{grid-column:1/-1;}
+
+        /* Top services */
+        .service-bar{margin-bottom:10px;}
+        .service-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+        .service-bar-label span:first-child{color:var(--text);}
+        .service-bar-label span:last-child{color:var(--green);font-weight:600;}
+        .service-bar-track{height:6px;background:var(--border);border-radius:999px;overflow:hidden;}
+        .service-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-dark));border-radius:999px;}
+
+        /* Customers table */
+        .table-wrap{overflow-x:auto;}
+        table{width:100%;border-collapse:collapse;font-size:13px;}
+        th{text-align:left;padding:8px 12px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+        td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+        tr:last-child td{border-bottom:none;}
+        tr:hover td{background:rgba(255,255,255,.02);}
+
+        /* Feedback */
+        .feedback-item{padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+        .stars{color:#f59e0b;font-size:14px;margin-bottom:3px;}
+        .fb-comment{font-size:13px;color:var(--text);}
+        .fb-meta{font-size:11px;color:var(--muted);margin-top:4px;}
+        .avg-rating{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--yellow);text-align:center;margin-bottom:4px;}
+        .avg-label{text-align:center;font-size:12px;color:var(--muted);}
+
+        @media(max-width:640px){.stats-grid{grid-template-columns:1fr 1fr;}.charts-grid{grid-template-columns:1fr;}.chart-card.full{grid-column:auto;}}
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <div style="display:flex;gap:16px;align-items:center;">
+        <a href="/">← Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>📊 Analytics</h2>
+        <p>Last 7 days performance overview — messages, orders, revenue and customer insights.</p>
+    </div>
+
+    <!-- Stats overview -->
+    <div class="stats-grid">
+        <div class="stat-card green">
+            <div class="stat-icon">💬</div>
+            <div class="stat-val">{{ total_messages }}</div>
+            <div class="stat-lbl">Messages (7 days)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-val">{{ total_orders }}</div>
+            <div class="stat-lbl">Total Orders</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">💰</div>
+            <div class="stat-val">₹{{ total_revenue|int }}</div>
+            <div class="stat-lbl">Total Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-val">{{ total_bookings }}</div>
+            <div class="stat-lbl">Total Bookings</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>💬 Messages / Day</h3>
+            <canvas id="msgChart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>🛒 Orders / Day</h3>
+            <canvas id="orderChart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>💰 Revenue / Day</h3>
+            <canvas id="revenueChart" height="130"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>⭐ Customer Ratings</h3>
+            {% if avg_rating > 0 %}
+            <div class="avg-rating">{{ avg_rating }}</div>
+            <div class="avg-label">Average Rating · {{ feedbacks|length }} reviews</div>
+            <div style="margin-top:16px;">
+                {% for fb in feedbacks[:3] %}
+                <div class="feedback-item">
+                    <div class="stars">{{ '⭐' * fb.rating }}{{ '☆' * (5 - fb.rating) }}</div>
+                    {% if fb.comment %}<div class="fb-comment">{{ fb.comment }}</div>{% endif %}
+                    <div class="fb-meta">{{ fb.customer_name or fb.customer_phone }} · {{ fb.created_at.strftime('%d %b') }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:30px;color:var(--muted);">
+                <p style="font-size:32px;margin-bottom:8px;">⭐</p>
+                <p>No ratings yet.</p>
+                <p style="font-size:11px;margin-top:4px;">Bot asks for ratings 24h after booking.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Services + Customers -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>🏆 Top Ordered Items</h3>
+            {% if top_services %}
+            {% set max_count = top_services[0][1] %}
+            {% for name, count in top_services %}
+            <div class="service-bar">
+                <div class="service-bar-label"><span>{{ name }}</span><span>{{ count }} orders</span></div>
+                <div class="service-bar-track"><div class="service-bar-fill" style="width:{{ (count/max_count*100)|int }}%"></div></div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center;padding:30px;color:var(--muted)"><p>No orders yet.</p></div>
+            {% endif %}
+        </div>
+        <div class="chart-card">
+            <h3>👥 Unique Customers ({{ customers|length }})</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Name</th><th>Phone</th></tr></thead>
+                    <tbody>
+                        {% for phone, name in customers[:10] %}
+                        <tr>
+                            <td>{{ name or '—' }}</td>
+                            <td style="color:var(--muted);">{{ phone }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="2" style="color:var(--muted);text-align:center;padding:20px;">No customers yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const msgRaw   = {{ msg_data|safe }};
+const orderRaw = {{ order_data|safe }};
+
+const labels = msgRaw.map(d => d.date.slice(5)); // MM-DD
+const chartDefaults = { responsive: true, plugins: { legend: { display: false } },
+    scales: { x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
+               y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' }, beginAtZero: true } }};
+
+// Messages chart
+new Chart(document.getElementById('msgChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: msgRaw.map(d=>d.count),
+        backgroundColor: 'rgba(0,200,150,.3)', borderColor: '#00c896', borderWidth: 2, borderRadius: 6 }]},
+    options: chartDefaults
+});
+
+// Orders chart
+new Chart(document.getElementById('orderChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ data: orderRaw.map(d=>d.count), fill: true,
+        backgroundColor: 'rgba(0,200,150,.08)', borderColor: '#00c896', borderWidth: 2,
+        pointBackgroundColor: '#00c896', tension: .4 }]},
+    options: chartDefaults
+});
+
+// Revenue chart
+new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: orderRaw.map(d=>d.revenue),
+        backgroundColor: 'rgba(245,158,11,.25)', borderColor: '#f59e0b', borderWidth: 2, borderRadius: 6 }]},
+    options: chartDefaults
+});
+</script>
+</body>
+</html>

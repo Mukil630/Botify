@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Catalog Management - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--green:#00c896;--green-dark:#00a07a;--bg:#0a0f1e;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;--red:#ef4444;--yellow:#f59e0b;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .navbar{background:rgba(17,24,39,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;z-index:100;}
+        .navbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;}
+        .navbar-brand span{color:var(--green);}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;}
+        .navbar a:hover{color:var(--text);}
+        .container{max-width:980px;margin:0 auto;padding:28px 20px;}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        .page-header h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+        .page-header p{font-size:13px;color:var(--muted);margin-top:3px;}
+        .btn{background:var(--green);color:#000;padding:9px 20px;border:none;border-radius:10px;cursor:pointer;text-decoration:none;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:background .2s;}
+        .btn:hover{background:var(--green-dark);}
+        .btn-secondary{background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.25);padding:8px 16px;border-radius:9px;font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .2s;}
+        .btn-secondary:hover{background:rgba(0,200,150,.2);}
+        .flash{padding:10px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:500;}
+        .flash.success{background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.2);}
+        .flash.error{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+
+        /* Category tabs */
+        .cat-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+        .cat-tab{padding:6px 16px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;}
+        .cat-tab.active,.cat-tab:hover{background:var(--green);color:#000;border-color:var(--green);}
+
+        /* Menu grid */
+        .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+        .menu-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .2s;position:relative;}
+        .menu-card:hover{border-color:rgba(0,200,150,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+        .menu-card.unavailable{opacity:.5;}
+        .menu-img{width:100%;height:160px;object-fit:cover;background:var(--border);}
+        .menu-img-placeholder{width:100%;height:160px;background:linear-gradient(135deg,#1f2937,#111827);display:flex;align-items:center;justify-content:center;font-size:48px;}
+        .menu-body{padding:14px 16px;}
+        .menu-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;}
+        .menu-desc{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;}
+        .menu-footer{display:flex;justify-content:space-between;align-items:center;}
+        .menu-price{font-size:16px;font-weight:700;color:var(--green);}
+        .menu-cat{font-size:10px;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--border);padding:2px 8px;border-radius:999px;}
+        .menu-actions{display:flex;gap:6px;margin-top:10px;}
+        .toggle-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+        .toggle-btn.on{background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.25);}
+        .toggle-btn.off{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+        .delete-btn{padding:5px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.15);text-decoration:none;display:inline-flex;align-items:center;}
+        .avail-badge{position:absolute;top:10px;right:10px;background:var(--green);color:#000;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;}
+        .unavail-badge{position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;}
+
+        .empty-state{text-align:center;padding:60px 20px;background:var(--card);border:1px dashed var(--border);border-radius:16px;}
+        .empty-state p{color:var(--muted);font-size:14px;margin-bottom:16px;}
+
+        /* Stats bar */
+        .stats-bar{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+        .stat-chip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px;flex:1;min-width:120px;}
+        .stat-chip .s-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green);}
+        .stat-chip .s-lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+        @media(max-width:640px){.menu-grid{grid-template-columns:1fr 1fr;}}
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <div style="display:flex;gap:16px;align-items:center;">
+        <a href="/">← Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, msg in messages %}
+            <div class="flash {{ category if category in ['success','error'] else 'success' }}">{{ msg }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="page-header">
+        <div>
+            <h2>📦 Product & Service Catalog</h2>
+            <p>Your bot automatically displays this universal catalog to customers who ask for prices or services.</p>
+        </div>
+        <a href="/add-service" class="btn">➕ Add Item</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-chip">
+            <div class="s-val">{{ services|length }}</div>
+            <div class="s-lbl">Total Items</div>
+        </div>
+        <div class="stat-chip">
+            <div class="s-val">{{ services|selectattr('is_available')|list|length }}</div>
+            <div class="s-lbl">Available</div>
+        </div>
+        <div class="stat-chip">
+            <div class="s-val">{{ categories|length }}</div>
+            <div class="s-lbl">Categories</div>
+        </div>
+    </div>
+
+    {% if categories %}
+    <div class="cat-tabs" id="catTabs">
+        <div class="cat-tab active" onclick="filterCat('all',this)">All</div>
+        {% for cat in categories %}
+        <div class="cat-tab" onclick="filterCat('{{ cat }}',this)">{{ cat }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if services %}
+    <div class="menu-grid" id="menuGrid">
+        {% for service in services %}
+        <div class="menu-card {{ '' if service.is_available else 'unavailable' }}" data-cat="{{ service.category or 'General' }}" id="card-{{ service.id }}">
+            {% if service.is_available %}
+            <div class="avail-badge">● Available</div>
+            {% else %}
+            <div class="unavail-badge">● Off Menu</div>
+            {% endif %}
+
+            {% if service.image_url %}
+            <img class="menu-img" src="{{ service.image_url }}" alt="{{ service.service_name }}">
+            {% else %}
+            <div class="menu-img-placeholder" style="background: linear-gradient(135deg, var(--green), var(--green-dark)); color: white; display: flex; align-items: center; justify-content: center; font-size: 64px; font-family: 'Syne', sans-serif; font-weight: 800;">
+                {{ service.service_name[0]|upper if service.service_name else '📦' }}
+            </div>
+            {% endif %}
+
+            <div class="menu-body">
+                <div class="menu-name">{{ service.service_name }}</div>
+                {% if service.description %}
+                <div class="menu-desc">{{ service.description }}</div>
+                {% endif %}
+                <div class="menu-footer">
+                    <div class="menu-price">{% if service.price %}₹{{ service.price }}{% else %}<span style="color:var(--muted);font-size:13px;">Price on request</span>{% endif %}</div>
+                    <div class="menu-cat">{{ service.category or 'General' }}</div>
+                </div>
+                <div class="menu-actions">
+                    <button class="toggle-btn {{ 'on' if service.is_available else 'off' }}"
+                        id="toggle-{{ service.id }}"
+                        onclick="toggleItem({{ service.id }})">
+                        {{ '✅ Available' if service.is_available else '❌ Unavailable' }}
+                    </button>
+                    <a href="/delete-service/{{ service.id }}" class="delete-btn" onclick="return confirm('Delete this item?')">🗑️</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p style="font-size:40px;margin-bottom:12px;">📦</p>
+        <p>Your catalog is completely empty! Add any service, software, class, consulting, or physical product.</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:20px;">Customers who type "catalog", "menu", or "services" will automatically see these items.</p>
+        <a href="/add-service" class="btn">➕ Add First Item</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterCat(cat, el) {
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.menu-card').forEach(card => {
+        card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+    });
+}
+
+async function toggleItem(id) {
+    const res  = await fetch(`/toggle-service/${id}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+        const card   = document.getElementById(`card-${id}`);
+        const btn    = document.getElementById(`toggle-${id}`);
+        const badges = card.querySelectorAll('.avail-badge,.unavail-badge');
+        badges.forEach(b => b.remove());
+        if (data.is_available) {
+            card.classList.remove('unavailable');
+            btn.className = 'toggle-btn on';
+            btn.textContent = '✅ Available';
+            card.insertAdjacentHTML('afterbegin','<div class="avail-badge">● Available</div>');
+        } else {
+            card.classList.add('unavailable');
+            btn.className = 'toggle-btn off';
+            btn.textContent = '❌ Unavailable';
+            card.insertAdjacentHTML('afterbegin','<div class="unavail-badge">● Off Menu</div>');
+        }
+    }
+}
+</script>
+</body>
+</html>

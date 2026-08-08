@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--wa:#25D366;--wa2:#128C7E;--wa3:#075E54;--bg:#0b141a;--panel:#111b21;--input:#2a3942;--border:#233138;--hdr:#1f2c33;--text:#e9edef;--muted:#8696a0}
+        html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+        .wa-pattern{position:fixed;inset:0;z-index:0;opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2325D366'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+        .wa-top{position:fixed;top:0;left:0;right:0;height:140px;background:linear-gradient(135deg,var(--wa3),var(--wa2));z-index:0}
+        #particleCanvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+        .page{display:flex;align-items:center;justify-content:center;height:100vh;position:relative;z-index:2;padding:40px}
+
+        .container{max-width:860px;width:100%;text-align:center;animation:fadeUp 0.7s ease both}
+
+        .logo{display:inline-flex;align-items:center;gap:14px;margin-bottom:28px}
+        .logo-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--wa),var(--wa3));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 8px 30px rgba(37,211,102,0.35);animation:pulseIcon 3s ease-in-out infinite}
+        .logo-text{text-align:left}
+        .logo-name{font-size:32px;font-weight:900;letter-spacing:-1px}
+        .logo-tag{font-size:12px;color:var(--muted)}
+
+        h1{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-2px;line-height:1.1;margin-bottom:14px}
+        h1 .green{color:var(--wa)}
+        .subtitle{font-size:17px;color:var(--muted);line-height:1.7;max-width:560px;margin:0 auto 40px}
+
+        .features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:40px}
+        .feat{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px 16px;text-align:center;transition:all 0.3s;cursor:default}
+        .feat:hover{border-color:rgba(37,211,102,0.3);transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+        .feat-ico{font-size:32px;margin-bottom:12px;display:block}
+        .feat-title{font-size:14px;font-weight:700;margin-bottom:4px}
+        .feat-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+        .cta-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;font-weight:800;font-size:17px;padding:16px 40px;border-radius:14px;text-decoration:none;transition:all 0.3s;box-shadow:0 6px 24px rgba(37,211,102,0.35);position:relative;overflow:hidden}
+        .cta-btn::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);animation:shimmer 2.5s infinite}
+        .cta-btn:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(37,211,102,0.5)}
+        .cta-btn .arr{transition:transform 0.3s}
+        .cta-btn:hover .arr{transform:translateX(5px)}
+
+        .free-tag{display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-size:13px;color:var(--wa);font-weight:600;opacity:0.7}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+        @keyframes pulseIcon{0%,100%{box-shadow:0 8px 30px rgba(37,211,102,0.35)}50%{box-shadow:0 8px 40px rgba(37,211,102,0.55)}}
+        @keyframes floatRandom{0%{transform:translate(0,0)rotate(0)}25%{transform:translate(15px,-20px)rotate(10deg)}50%{transform:translate(-10px,10px)rotate(-5deg)}75%{transform:translate(20px,15px)rotate(8deg)}100%{transform:translate(0,0)rotate(0)}}
+
+        .floating-icons{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+        .fi{position:absolute;font-size:24px;opacity:0.05;animation:floatRandom 18s ease-in-out infinite}
+        .fi:nth-child(1){top:10%;left:8%;animation-delay:0s}
+        .fi:nth-child(2){top:25%;right:10%;animation-delay:-4s;font-size:20px}
+        .fi:nth-child(3){bottom:20%;left:12%;animation-delay:-8s;font-size:28px}
+        .fi:nth-child(4){bottom:10%;right:15%;animation-delay:-12s}
+
+        @media(max-width:768px){.features{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+<div class="wa-pattern"></div>
+<div class="wa-top"></div>
+<canvas id="particleCanvas"></canvas>
+<div class="floating-icons">
+    <span class="fi">💬</span><span class="fi">🤖</span><span class="fi">📦</span><span class="fi">📊</span>
+</div>
+
+<div class="page">
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <div class="logo-text">
+                <div class="logo-name">Botify</div>
+                <div class="logo-tag">💬 WhatsApp Automation Platform</div>
+            </div>
+        </div>
+
+        <h1>Welcome to <span class="green">Botify</span>! 🎉</h1>
+        <p class="subtitle">Your AI-powered WhatsApp bot is ready to go. Automate orders, bookings, customer replies & grow your business 24/7.</p>
+
+        <div class="features">
+            <div class="feat"><span class="feat-ico">🤖</span><div class="feat-title">AI Auto-Reply</div><div class="feat-desc">Smart AI replies to customers instantly</div></div>
+            <div class="feat"><span class="feat-ico">📅</span><div class="feat-title">Booking System</div><div class="feat-desc">Customers book directly via WhatsApp</div></div>
+            <div class="feat"><span class="feat-ico">📦</span><div class="feat-title">Order Engine</div><div class="feat-desc">Accept & manage orders automatically</div></div>
+            <div class="feat"><span class="feat-ico">📊</span><div class="feat-title">Analytics</div><div class="feat-desc">Track messages, revenue & growth</div></div>
+        </div>
+
+        <a href="/upgrade" class="cta-btn">Get Started — Choose Your Plan <span class="arr">→</span></a>
+        <div class="free-tag">🎁 Free plan available — 8 messages/day, no credit card</div>
+    </div>
+</div>
+
+<script>
+const c=document.getElementById('particleCanvas'),x=c.getContext('2d');let W,H;
+const p=[];function r(){W=c.width=innerWidth;H=c.height=innerHeight}r();addEventListener('resize',r);
+for(let i=0;i<40;i++)p.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.5,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,a:Math.random()*0.3+0.1});
+let mx=null,my=null;addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+function d(){x.clearRect(0,0,W,H);p.forEach(pt=>{x.beginPath();x.arc(pt.x,pt.y,pt.r,0,Math.PI*2);x.fillStyle=`rgba(37,211,102,${pt.a})`;x.fill();x.beginPath();x.arc(pt.x,pt.y,pt.r*3,0,Math.PI*2);x.fillStyle=`rgba(37,211,102,${pt.a*0.08})`;x.fill();pt.x+=pt.vx;pt.y+=pt.vy;if(pt.x<0)pt.x=W;if(pt.x>W)pt.x=0;if(pt.y<0)pt.y=H;if(pt.y>H)pt.y=0});for(let i=0;i<p.length;i++){for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<120){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(p[j].x,p[j].y);x.strokeStyle=`rgba(37,211,102,${0.05*(1-dist/120)})`;x.lineWidth=0.5;x.stroke()}}if(mx!==null){const dx=p[i].x-mx,dy=p[i].y-my,dist=Math.sqrt(dx*dx+dy*dy);if(dist<160){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(mx,my);x.strokeStyle=`rgba(37,211,102,${0.08*(1-dist/160)})`;x.lineWidth=0.3;x.stroke()}}}requestAnimationFrame(d)}d();
+</script>
+</body>
+</html>

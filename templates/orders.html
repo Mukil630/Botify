@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orders - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--green:#00c896;--green-dark:#00a07a;--bg:#0a0f1e;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;--red:#ef4444;--yellow:#f59e0b;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .navbar{background:rgba(17,24,39,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;z-index:100;}
+        .navbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;}
+        .navbar-brand span{color:var(--green);}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;}
+        .container{max-width:980px;margin:0 auto;padding:28px 20px;}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        .page-header h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+        .page-header p{font-size:13px;color:var(--muted);margin-top:3px;}
+
+        /* Status filter tabs */
+        .status-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+        .status-tab{padding:7px 16px;border-radius:999px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;}
+        .status-tab.active{background:var(--green);color:#000;border-color:var(--green);}
+        .status-tab:hover:not(.active){border-color:rgba(0,200,150,.4);color:var(--text);}
+        .badge-count{display:inline-block;background:rgba(255,255,255,.1);border-radius:999px;padding:1px 7px;font-size:10px;margin-left:4px;}
+
+        /* Order cards */
+        .orders-list{display:flex;flex-direction:column;gap:12px;}
+        .order-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;transition:border-color .2s;}
+        .order-card:hover{border-color:rgba(0,200,150,.2);}
+        .order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+        .order-customer h4{font-size:15px;font-weight:600;color:#fff;margin-bottom:3px;}
+        .order-customer p{font-size:12px;color:var(--muted);}
+        .order-meta{text-align:right;}
+        .order-id{font-size:11px;color:var(--muted);margin-bottom:4px;}
+        .order-time{font-size:11px;color:var(--muted);}
+        .order-total{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--green);margin-top:4px;}
+
+        /* Status badge */
+        .status-badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+        .s-pending{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
+        .s-confirmed{background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.25);}
+        .s-preparing{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.3);}
+        .s-ready{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+        .s-delivered{background:rgba(107,114,128,.1);color:var(--muted);border:1px solid var(--border);}
+        .s-cancelled{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+
+        /* Items table */
+        .items-table{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;}
+        .item-row{display:flex;justify-content:space-between;padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);}
+        .item-row:last-child{border-bottom:none;}
+        .item-name{color:var(--text);}
+        .item-qty{color:var(--muted);}
+        .item-price{color:var(--green);font-weight:600;}
+
+        /* Status update buttons */
+        .status-actions{display:flex;gap:6px;flex-wrap:wrap;}
+        .s-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);transition:all .2s;}
+        .s-btn:hover{border-color:var(--green);color:var(--green);background:rgba(0,200,150,.05);}
+        .s-btn.active-status{background:var(--green);color:#000;border-color:var(--green);}
+
+        .empty-state{text-align:center;padding:60px 20px;background:var(--card);border:1px dashed var(--border);border-radius:16px;}
+        .empty-state p{color:var(--muted);font-size:14px;margin-bottom:8px;}
+
+        /* Live dot */
+        .live-dot::before{content:'';display:inline-block;width:7px;height:7px;background:#00c896;border-radius:50%;margin-right:6px;animation:blink 1.5s infinite;}
+        @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+        @media(max-width:640px){.order-top{flex-direction:column;}.order-meta{text-align:left;}}
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <div style="display:flex;gap:16px;align-items:center;">
+        <a href="/">← Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h2>🛒 Orders <span class="live-dot" style="font-size:13px;color:var(--green);font-family:'DM Sans'"> Live</span></h2>
+            <p>Customer orders from WhatsApp — update status in one click.</p>
+        </div>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div class="status-tabs">
+        <a href="/orders?status=all"       class="status-tab {{ 'active' if status_filter == 'all' }}">All <span class="badge-count">{{ counts.all }}</span></a>
+        <a href="/orders?status=pending"   class="status-tab {{ 'active' if status_filter == 'pending' }}">⏳ Pending <span class="badge-count">{{ counts.pending }}</span></a>
+        <a href="/orders?status=confirmed" class="status-tab {{ 'active' if status_filter == 'confirmed' }}">✅ Confirmed <span class="badge-count">{{ counts.confirmed }}</span></a>
+        <a href="/orders?status=preparing" class="status-tab {{ 'active' if status_filter == 'preparing' }}">👨‍🍳 Preparing <span class="badge-count">{{ counts.preparing }}</span></a>
+        <a href="/orders?status=ready"     class="status-tab {{ 'active' if status_filter == 'ready' }}">📦 Ready <span class="badge-count">{{ counts.ready }}</span></a>
+        <a href="/orders?status=delivered" class="status-tab {{ 'active' if status_filter == 'delivered' }}">🚀 Delivered <span class="badge-count">{{ counts.delivered }}</span></a>
+    </div>
+
+    {% if orders %}
+    <div class="orders-list" id="ordersList">
+        {% for order in orders %}
+        <div class="order-card" id="order-{{ order.id }}">
+            <div class="order-top">
+                <div class="order-customer">
+                    <h4>👤 {{ order.customer_name or 'Unknown Customer' }}</h4>
+                    <p>📱 {{ order.customer_phone }}</p>
+                </div>
+                <div class="order-meta">
+                    <div class="order-id">#{{ order.id }}</div>
+                    <div class="order-time">{{ order.created_at.strftime('%d %b %H:%M') }}</div>
+                    <div class="order-total">₹{{ order.total_amount }}</div>
+                </div>
+            </div>
+
+            <!-- Items -->
+            {% if order.items_list %}
+            <div class="items-table">
+                {% for item in order.items_list %}
+                <div class="item-row">
+                    <span class="item-name">{{ item.name }}</span>
+                    <span class="item-qty">x{{ item.qty }}</span>
+                    <span class="item-price">₹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Current status + actions -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <span class="status-badge s-{{ order.status }}" id="badge-{{ order.id }}">{{ order.status }}</span>
+                <div class="status-actions">
+                    {% for s in ['pending','confirmed','preparing','ready','delivered','cancelled'] %}
+                    <button class="s-btn {{ 'active-status' if order.status == s }}"
+                        onclick="updateStatus({{ order.id }}, '{{ s }}', this)">
+                        {{ {'pending':'⏳','confirmed':'✅','preparing':'👨‍🍳','ready':'📦','delivered':'🚀','cancelled':'❌'}[s] }} {{ s.title() }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p style="font-size:42px;margin-bottom:12px;">🛒</p>
+        <p>No orders yet!</p>
+        <p style="font-size:12px;color:var(--muted);">When customers place orders via WhatsApp, they'll appear here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function updateStatus(orderId, newStatus, btn) {
+    const res  = await fetch(`/api/update-order-status/${orderId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: newStatus})
+    });
+    const data = await res.json();
+    if (data.success) {
+        // Update badge
+        const badge = document.getElementById(`badge-${orderId}`);
+        badge.className = `status-badge s-${newStatus}`;
+        badge.textContent = newStatus;
+        // Update buttons
+        const card = document.getElementById(`order-${orderId}`);
+        card.querySelectorAll('.s-btn').forEach(b => b.classList.remove('active-status'));
+        btn.classList.add('active-status');
+    }
+}
+
+// Auto-refresh every 30s
+setInterval(() => { if(document.visibilityState === 'visible') location.reload(); }, 30000);
+</script>
+</body>
+</html>

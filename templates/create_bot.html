@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Bot - WhatsApp Bot SaaS</title>
+    <style>
+        body { font-family: Arial; background: #f0f2f5; margin: 0; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: white; margin: 0; font-size: 20px; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { padding: 30px; max-width: 600px; margin: auto; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { color: #25D366; margin-top: 0; }
+        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 100px; resize: vertical; }
+        .features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .feature-item { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; }
+        .feature-item:hover { background: #f0fff4; border-color: #25D366; }
+        .feature-item input { width: auto; }
+        .btn { width: 100%; padding: 12px; background: #25D366; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        .btn:hover { background: #128C7E; }
+        .btn-back { background: #888; margin-bottom: 10px; display: inline-block; padding: 8px 16px; color: white; text-decoration: none; border-radius: 5px; }
+        .flash { color: red; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🤖 WhatsApp Bot SaaS</h1>
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <a href="/" class="btn-back">← Back to Dashboard</a>
+        <div class="card">
+            <h2>🤖 Create New Bot</h2>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <p class="flash">{{ msg }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="POST">
+                <label>Bot Name</label>
+                <input type="text" name="bot_name" placeholder="e.g. Mukil Restaurant Bot" required>
+
+                <label>Welcome Message</label>
+                <textarea name="welcome_message" placeholder="e.g. Hello! Welcome to Mukil Restaurant. How can I help you today?"></textarea>
+
+                <label>Features</label>
+                <div class="features">
+                    <label class="feature-item">
+                        <input type="checkbox" name="features" value="auto_reply"> 🤖 Auto Reply
+                    </label>
+                    <label class="feature-item">
+                        <input type="checkbox" name="features" value="menu"> 🍽️ Menu / Price List
+                    </label>
+                    <label class="feature-item">
+                        <input type="checkbox" name="features" value="booking"> 📅 Appointment Booking
+                    </label>
+                    <label class="feature-item">
+                        <input type="checkbox" name="features" value="leads"> 📋 Lead Collection
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">🚀 Create Bot</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

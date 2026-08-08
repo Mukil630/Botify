@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Plan — Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--wa:#25D366;--wa2:#128C7E;--wa3:#075E54;--bg:#0b141a;--panel:#111b21;--input:#2a3942;--border:#233138;--hdr:#1f2c33;--text:#e9edef;--muted:#8696a0;--gold:#f59e0b}
+        html,body{min-height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+        .wa-pattern{position:fixed;inset:0;z-index:0;opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2325D366'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+        .wa-top{position:fixed;top:0;left:0;right:0;height:140px;background:linear-gradient(135deg,var(--wa3),var(--wa2));z-index:0}
+        #particleCanvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+        .page{position:relative;z-index:2;min-height:100vh;padding:40px 20px 60px}
+
+        .flash-bar{max-width:1100px;margin:0 auto 16px;padding:12px 18px;border-radius:12px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.2);color:var(--wa);font-size:13px;text-align:center;animation:fadeUp 0.5s ease}
+
+        .header{text-align:center;margin-bottom:36px;animation:fadeUp 0.6s ease both}
+        .header-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+        .header-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--wa),var(--wa3));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(37,211,102,0.3)}
+        .header-name{font-size:20px;font-weight:900}
+        .header h1{font-size:clamp(26px,3.5vw,40px);font-weight:900;letter-spacing:-1.5px;margin-bottom:6px}
+        .header h1 .green{color:var(--wa)}
+        .header p{font-size:14px;color:var(--muted)}
+
+        /* Safety notice */
+        .safety-notice{max-width:1100px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 20px;background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.12);border-radius:10px;font-size:12px;color:var(--wa);animation:fadeUp 0.7s ease 0.05s both}
+        .safety-notice .safety-dot{width:8px;height:8px;background:var(--wa);border-radius:50%;animation:pulseDot 2s infinite;flex-shrink:0}
+
+        /* Plans grid — 6 cards in 3x2 or responsive */
+        .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1100px;margin:0 auto;animation:fadeUp 0.8s ease 0.1s both}
+
+        .plan{background:var(--panel);border:1.5px solid var(--border);border-radius:18px;padding:24px 20px;position:relative;display:flex;flex-direction:column;transition:all 0.3s}
+        .plan:hover{border-color:rgba(37,211,102,0.25);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+
+        .plan.popular{border-color:var(--wa);box-shadow:0 0 0 1px var(--wa),0 8px 32px rgba(37,211,102,0.12)}
+        .tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;padding:4px 14px;border-radius:100px;letter-spacing:0.6px;text-transform:uppercase;white-space:nowrap}
+        .tag-popular{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;box-shadow:0 4px 12px rgba(37,211,102,0.3)}
+        .tag-free{background:var(--hdr);color:var(--wa);border:1px solid rgba(37,211,102,0.2)}
+        .tag-premium{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;box-shadow:0 4px 12px rgba(245,158,11,0.3)}
+
+        .plan-emoji{font-size:30px;margin-bottom:10px}
+        .plan-name{font-size:16px;font-weight:800;margin-bottom:4px}
+        .plan-price{font-size:32px;font-weight:900;color:var(--wa);margin-bottom:2px;letter-spacing:-1px}
+        .plan-price .cur{font-size:16px;font-weight:600;vertical-align:top;margin-right:1px}
+        .plan-price .per{font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}
+        .plan-desc{font-size:11px;color:var(--muted);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+
+        .plan-features{list-style:none;flex:1;margin-bottom:18px}
+        .plan-features li{font-size:12px;padding:4px 0;display:flex;align-items:center;gap:7px;color:var(--text)}
+        .plan-features li .ck{color:var(--wa);font-weight:700;font-size:13px;flex-shrink:0}
+        .plan-features li.off{color:#4a5568}
+        .plan-features li.off .ck{color:#4a5568}
+        .plan-features li .highlight{color:var(--wa);font-weight:700}
+
+        .btn-plan{width:100%;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
+        .btn-primary{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;box-shadow:0 4px 16px rgba(37,211,102,0.3)}
+        .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);animation:shimmer 2.5s infinite}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(37,211,102,0.45)}
+        .btn-outline{background:transparent;color:var(--wa);border:1.5px solid rgba(37,211,102,0.3)}
+        .btn-outline:hover{background:rgba(37,211,102,0.08);border-color:var(--wa);transform:translateY(-2px)}
+        .btn-free{background:rgba(37,211,102,0.08);color:var(--wa);border:1.5px solid rgba(37,211,102,0.2)}
+        .btn-free:hover{background:rgba(37,211,102,0.15);transform:translateY(-2px)}
+        .btn-gold{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;box-shadow:0 4px 16px rgba(245,158,11,0.3)}
+        .btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,158,11,0.45)}
+
+        .bottom-section{max-width:1100px;margin:30px auto 0;text-align:center;animation:fadeUp 0.9s ease 0.25s both}
+        .bottom-note{font-size:12px;color:var(--muted);margin-bottom:8px}
+        .bottom-note a{color:var(--wa);text-decoration:none;font-weight:600}
+        .sandbox-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:100px;padding:6px 16px;font-size:11px;color:var(--gold);font-weight:600}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+        @keyframes pulseDot{0%,100%{opacity:1;box-shadow:0 0 8px var(--wa)}50%{opacity:0.4;box-shadow:0 0 4px var(--wa)}}
+
+        @media(max-width:900px){.plans{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:560px){.plans{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="wa-pattern"></div>
+<div class="wa-top"></div>
+<canvas id="particleCanvas"></canvas>
+
+<div class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-bar">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <div class="header">
+        <div class="header-brand">
+            <div class="header-icon">🤖</div>
+            <div class="header-name">Botify</div>
+        </div>
+        <h1>Choose Your <span class="green">Plan</span></h1>
+        <p>Start free, upgrade anytime. No hidden fees.</p>
+    </div>
+
+    <!-- Safety Notice -->
+    <div class="safety-notice">
+        <span class="safety-dot"></span>
+        ⚡ Each message has a <strong>&nbsp;1-second delay&nbsp;</strong> between sends for WhatsApp safety & anti-ban protection
+    </div>
+
+    <div class="plans">
+        <!-- ═══ FREE ═══ -->
+        <div class="plan">
+            <div class="tag tag-free">🎁 Free Forever</div>
+            <div class="plan-emoji">🌱</div>
+            <div class="plan-name">Free</div>
+            <div class="plan-price"><span class="cur">₹</span>0 <span class="per">/ forever</span></div>
+            <div class="plan-desc">Try Botify, no commitment</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> 1 WhatsApp Bot</li>
+                <li><span class="ck">✓</span> <span class="highlight">8 messages / day</span></li>
+                <li><span class="ck">✓</span> Basic auto-reply</li>
+                <li><span class="ck">✓</span> Booking management</li>
+                <li class="off"><span class="ck">—</span> No analytics</li>
+                <li class="off"><span class="ck">—</span> No broadcast</li>
+            </ul>
+            <form action="/select-plan/free" method="POST">
+                <button type="submit" class="btn-plan btn-free">Start Free →</button>
+            </form>
+        </div>
+
+        <!-- ═══ STARTER ═══ -->
+        <div class="plan popular">
+            <div class="tag tag-popular">⭐ Most Popular</div>
+            <div class="plan-emoji">🚀</div>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price"><span class="cur">₹</span>49 <span class="per">/ 30 days</span></div>
+            <div class="plan-desc">Perfect for small businesses</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> 3 WhatsApp Bots</li>
+                <li><span class="ck">✓</span> <span class="highlight">35 messages / day</span></li>
+                <li><span class="ck">✓</span> AI-powered replies</li>
+                <li><span class="ck">✓</span> Booking management</li>
+                <li><span class="ck">✓</span> Basic analytics</li>
+                <li class="off"><span class="ck">—</span> No broadcast</li>
+            </ul>
+            <form action="/select-plan/starter" method="POST">
+                <button type="submit" class="btn-plan btn-primary">Get Starter →</button>
+            </form>
+        </div>
+
+        <!-- ═══ PRO ═══ -->
+        <div class="plan">
+            <div class="plan-emoji">💎</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price"><span class="cur">₹</span>199 <span class="per">/ 30 days</span></div>
+            <div class="plan-desc">Scale your automation</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> 5 WhatsApp Bots</li>
+                <li><span class="ck">✓</span> <span class="highlight">120 messages / day</span></li>
+                <li><span class="ck">✓</span> Advanced AI replies</li>
+                <li><span class="ck">✓</span> Full analytics</li>
+                <li><span class="ck">✓</span> Broadcast (50/day)</li>
+                <li><span class="ck">✓</span> Order engine</li>
+            </ul>
+            <form action="/select-plan/pro" method="POST">
+                <button type="submit" class="btn-plan btn-outline">Get Pro →</button>
+            </form>
+        </div>
+
+        <!-- ═══ GROWTH ═══ -->
+        <div class="plan">
+            <div class="plan-emoji">📈</div>
+            <div class="plan-name">Growth</div>
+            <div class="plan-price"><span class="cur">₹</span>299 <span class="per">/ 30 days</span></div>
+            <div class="plan-desc">For growing businesses</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> 10 WhatsApp Bots</li>
+                <li><span class="ck">✓</span> <span class="highlight">500 messages / day</span></li>
+                <li><span class="ck">✓</span> Advanced AI replies</li>
+                <li><span class="ck">✓</span> Full analytics + reports</li>
+                <li><span class="ck">✓</span> Broadcast (200/day)</li>
+                <li><span class="ck">✓</span> Priority support</li>
+            </ul>
+            <form action="/select-plan/growth" method="POST">
+                <button type="submit" class="btn-plan btn-outline">Get Growth →</button>
+            </form>
+        </div>
+
+        <!-- ═══ BUSINESS ═══ -->
+        <div class="plan">
+            <div class="plan-emoji">🏢</div>
+            <div class="plan-name">Business</div>
+            <div class="plan-price"><span class="cur">₹</span>499 <span class="per">/ 30 days</span></div>
+            <div class="plan-desc">Enterprise-grade power</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> 20 WhatsApp Bots</li>
+                <li><span class="ck">✓</span> <span class="highlight">800 messages / day</span></li>
+                <li><span class="ck">✓</span> Custom AI training</li>
+                <li><span class="ck">✓</span> Full analytics + reports</li>
+                <li><span class="ck">✓</span> Unlimited broadcast</li>
+                <li><span class="ck">✓</span> Dedicated support</li>
+            </ul>
+            <form action="/select-plan/business" method="POST">
+                <button type="submit" class="btn-plan btn-outline">Get Business →</button>
+            </form>
+        </div>
+
+        <!-- ═══ ENTERPRISE ═══ -->
+        <div class="plan">
+            <div class="tag tag-premium">🔥 Ultimate</div>
+            <div class="plan-emoji">👑</div>
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price"><span class="cur">₹</span>999 <span class="per">/ 30 days</span></div>
+            <div class="plan-desc">Unlimited everything</div>
+            <ul class="plan-features">
+                <li><span class="ck">✓</span> Unlimited Bots</li>
+                <li><span class="ck">✓</span> <span class="highlight">Unlimited messages</span></li>
+                <li><span class="ck">✓</span> Custom AI training</li>
+                <li><span class="ck">✓</span> Full analytics + API</li>
+                <li><span class="ck">✓</span> Unlimited broadcast</li>
+                <li><span class="ck">✓</span> 24/7 dedicated support</li>
+            </ul>
+            <form action="/select-plan/enterprise" method="POST">
+                <button type="submit" class="btn-plan btn-gold">Get Enterprise →</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="sandbox-badge">⚠️ Sandbox Mode — 1 second delay per message for WhatsApp safety</div>
+        <div class="bottom-note" style="margin-top:12px">
+            🔒 All plans include end-to-end encryption · Prices in INR · <a href="/login">Back to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const c=document.getElementById('particleCanvas'),x=c.getContext('2d');let W,H;const p=[];
+function r(){W=c.width=innerWidth;H=c.height=innerHeight}r();addEventListener('resize',r);
+for(let i=0;i<40;i++)p.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+0.5,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,a:Math.random()*0.3+0.1});
+let mx=null,my=null;addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+function d(){x.clearRect(0,0,W,H);p.forEach(pt=>{x.beginPath();x.arc(pt.x,pt.y,pt.r,0,Math.PI*2);x.fillStyle=`rgba(37,211,102,${pt.a})`;x.fill();x.beginPath();x.arc(pt.x,pt.y,pt.r*3,0,Math.PI*2);x.fillStyle=`rgba(37,211,102,${pt.a*0.08})`;x.fill();pt.x+=pt.vx;pt.y+=pt.vy;if(pt.x<0)pt.x=W;if(pt.x>W)pt.x=0;if(pt.y<0)pt.y=H;if(pt.y>H)pt.y=0});for(let i=0;i<p.length;i++){for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<120){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(p[j].x,p[j].y);x.strokeStyle=`rgba(37,211,102,${0.05*(1-dist/120)})`;x.lineWidth=0.5;x.stroke()}}if(mx!==null){const dx=p[i].x-mx,dy=p[i].y-my,dist=Math.sqrt(dx*dx+dy*dy);if(dist<160){x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(mx,my);x.strokeStyle=`rgba(37,211,102,${0.08*(1-dist/160)})`;x.lineWidth=0.3;x.stroke()}}}requestAnimationFrame(d)}d();
+</script>
+</body>
+</html>

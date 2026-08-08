@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Details</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial; background: #f0f2f5; }
+        .navbar { background: #25D366; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: white; font-size: 20px; }
+        .navbar a { color: white; text-decoration: none; }
+        .container { padding: 30px; max-width: 900px; margin: auto; }
+        .btn-back { background: #888; display: inline-block; padding: 8px 16px; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px; }
+        .btn-back:hover { background: #666; }
+        
+        .booking-header { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .booking-header h2 { color: #25D366; margin-bottom: 15px; }
+        .booking-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-item { padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .info-label { font-weight: bold; color: #333; font-size: 12px; text-transform: uppercase; }
+        .info-value { color: #666; margin-top: 5px; font-size: 14px; }
+        
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-confirmed { background: #e8f5e9; color: #25D366; }
+        .status-pending { background: #fff3e0; color: #f57c00; }
+        .status-completed { background: #e3f2fd; color: #1976d2; }
+        
+        .conversation-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .conversation-box h3 { color: #333; margin-bottom: 20px; font-size: 16px; }
+        .messages-container { max-height: 500px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 5px; padding: 15px; }
+        
+        .message { margin-bottom: 15px; padding: 10px; border-radius: 5px; }
+        .message.customer { background: #e8f5e9; margin-left: 20px; border-left: 3px solid #25D366; }
+        .message.bot { background: #f5f5f5; margin-right: 20px; border-left: 3px solid #999; }
+        .message-sender { font-weight: bold; color: #333; font-size: 12px; margin-bottom: 5px; }
+        .message-text { color: #555; font-size: 14px; line-height: 1.4; }
+        .message-time { font-size: 11px; color: #999; margin-top: 5px; }
+        
+        .empty-state { text-align: center; color: #999; padding: 30px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🤖 WhatsApp Bot SaaS</h1>
+        <a href="/logout">Logout</a>
+    </div>
+    
+    <div class="container">
+        <a href="/" class="btn-back">← Back to Dashboard</a>
+        
+        <div class="booking-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📅 Booking Details - ID: #{{ booking.id }}</h2>
+                <span class="status-badge status-{{ booking.status }}">{{ booking.status.upper() }}</span>
+            </div>
+            
+            <div class="booking-info" style="margin-top: 20px;">
+                <div class="info-item">
+                    <div class="info-label">👤 Customer Name</div>
+                    <div class="info-value">{{ booking.customer_name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📱 Phone Number</div>
+                    <div class="info-value">{{ booking.customer_phone }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🛎️ Service</div>
+                    <div class="info-value">{{ booking.service }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📅 Booking Date & Time</div>
+                    <div class="info-value">{{ booking.date_time }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">🕐 Booked On</div>
+                    <div class="info-value">{{ booking.created_at.strftime('%d-%m-%Y %H:%M:%S') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">📊 Status</div>
+                    <div class="info-value">{{ booking.status.capitalize() }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="conversation-box">
+            <h3>💬 Conversation History</h3>
+            
+            {% if conversations %}
+                <div class="messages-container">
+                    {% for conv in conversations %}
+                        <div class="message {{ conv.sender }}">
+                            <div class="message-sender">
+                                {% if conv.sender == 'customer' %}
+                                    👤 Customer
+                                {% else %}
+                                    🤖 Bot
+                                {% endif %}
+                            </div>
+                            <div class="message-text">{{ conv.message_text }}</div>
+                            <div class="message-time">{{ conv.timestamp.strftime('%H:%M:%S') }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No conversation history available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Plan — Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--wa:#25D366;--wa2:#128C7E;--wa3:#075E54;--bg:#0b141a;--panel:#111b21;--input:#2a3942;--border:#233138;--hdr:#1f2c33;--text:#e9edef;--muted:#8696a0;--gold:#f59e0b;--red:#ef4444}
+        html,body{min-height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+        .wa-pattern{position:fixed;inset:0;z-index:0;opacity:0.03;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2325D366'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+
+        .navbar{background:var(--panel);border-bottom:1px solid var(--border);padding:0 24px;display:flex;justify-content:space-between;align-items:center;height:54px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+        .navbar-brand{font-size:18px;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px}
+        .navbar-brand .green{color:var(--wa)}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:600;transition:color 0.2s}
+        .navbar a:hover{color:var(--wa)}
+
+        .page{position:relative;z-index:1;min-height:calc(100vh - 54px);padding:28px 20px 50px}
+        .container{max-width:1100px;margin:0 auto}
+
+        .header-card{background:linear-gradient(135deg,var(--panel),#0d1a2d);border:1px solid var(--border);border-radius:16px;padding:22px 26px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+        .header-card h2{font-size:22px;font-weight:900;margin-bottom:4px}
+        .header-card p{font-size:13px;color:var(--muted)}
+        .current-chip{background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.25);border-radius:12px;padding:10px 18px;text-align:center;white-space:nowrap}
+        .current-chip .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+        .current-chip .value{font-size:15px;font-weight:800;color:var(--wa);margin-top:2px}
+
+        .safety{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.12);border-radius:10px;font-size:12px;color:var(--wa);margin-bottom:24px}
+        .safety .dot{width:7px;height:7px;background:var(--wa);border-radius:50%;animation:pulseDot 2s infinite;flex-shrink:0}
+
+        .pending-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:14px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+        .pending-banner .p-icon{font-size:26px;flex-shrink:0}
+        .pending-banner h4{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:2px}
+        .pending-banner p{font-size:11px;color:var(--muted);line-height:1.5}
+
+        .plans-title{font-size:16px;font-weight:800;text-align:center;margin-bottom:18px}
+        .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+
+        .plan{background:var(--panel);border:1.5px solid var(--border);border-radius:16px;padding:22px 18px;text-align:center;position:relative;display:flex;flex-direction:column;transition:all 0.3s;cursor:pointer}
+        .plan:hover{border-color:rgba(37,211,102,0.3);transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,0.4)}
+        .plan.popular{border-color:var(--wa);box-shadow:0 0 0 1px var(--wa),0 6px 24px rgba(37,211,102,0.1)}
+        .plan.current{opacity:0.5;pointer-events:none}
+        .plan.current::after{content:'CURRENT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:900;color:var(--wa);letter-spacing:2px;z-index:5}
+
+        .tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;padding:4px 12px;border-radius:100px;letter-spacing:0.6px;text-transform:uppercase;white-space:nowrap}
+        .tag-pop{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;box-shadow:0 4px 12px rgba(37,211,102,0.3)}
+        .tag-free{background:var(--hdr);color:var(--wa);border:1px solid rgba(37,211,102,0.2)}
+        .tag-ult{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;box-shadow:0 4px 12px rgba(245,158,11,0.3)}
+
+        .p-emoji{font-size:28px;margin-bottom:8px}
+        .p-name{font-size:15px;font-weight:800;margin-bottom:4px}
+        .p-price{font-size:28px;font-weight:900;color:var(--wa);letter-spacing:-1px;margin-bottom:2px}
+        .p-price .cur{font-size:14px;vertical-align:top;margin-right:1px}
+        .p-price .per{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0}
+        .p-limit{font-size:11px;color:var(--muted);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+        .p-feats{list-style:none;text-align:left;margin-bottom:16px;flex:1}
+        .p-feats li{font-size:11px;padding:3px 0;display:flex;align-items:center;gap:6px;color:var(--text)}
+        .p-feats li .ck{color:var(--wa);font-weight:700;font-size:12px;flex-shrink:0}
+        .p-feats li.off{color:#4a5568}
+        .p-feats li.off .ck{color:#4a5568}
+        .p-feats li .hl{color:var(--wa);font-weight:700}
+
+        .btn-pay{width:100%;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
+        .btn-green{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;box-shadow:0 4px 14px rgba(37,211,102,0.3)}
+        .btn-green::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);animation:shimmer 2.5s infinite}
+        .btn-green:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,0.4)}
+        .btn-out{background:transparent;color:var(--wa);border:1.5px solid rgba(37,211,102,0.3)}
+        .btn-out:hover{background:rgba(37,211,102,0.08);border-color:var(--wa)}
+        .btn-free{background:rgba(37,211,102,0.08);color:var(--wa);border:1.5px solid rgba(37,211,102,0.2)}
+        .btn-gold{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,0.3)}
+        .btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,0.4)}
+
+        .how{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:20px}
+        .how h4{font-size:14px;font-weight:800;margin-bottom:16px}
+        .how-steps{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+        .how-step{text-align:center;flex:1;min-width:80px}
+        .how-step .hs-i{font-size:24px;margin-bottom:4px}
+        .how-step .hs-n{font-size:10px;color:var(--wa);font-weight:700;margin-bottom:2px}
+        .how-step .hs-t{font-size:10px;color:var(--muted)}
+
+        .bottom-note{text-align:center;font-size:11px;color:var(--muted)}
+        .bottom-note a{color:var(--wa);text-decoration:none;font-weight:600}
+
+        /* ═══ QR MODAL ═══ */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+        .modal-overlay.show{display:flex}
+        .modal{background:linear-gradient(160deg,var(--panel),#0d1a2d);border:1px solid rgba(37,211,102,0.15);border-radius:20px;padding:26px 28px;width:400px;max-width:92vw;max-height:90vh;overflow-y:auto;position:relative;animation:fadeUp 0.35s ease;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+        .modal-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:16px;cursor:pointer;transition:all 0.2s;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+        .modal-close:hover{color:var(--red);background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3)}
+
+        .modal-header{text-align:center;margin-bottom:14px}
+        .modal-header h3{font-size:17px;font-weight:800;margin-bottom:3px}
+        .modal-header p{font-size:11px;color:var(--muted)}
+        .modal-apps{display:flex;gap:6px;justify-content:center;margin-top:8px}
+        .modal-apps span{background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.12);padding:3px 10px;border-radius:20px;font-size:10px;color:var(--muted)}
+
+        .qr-box{background:#fff;border-radius:12px;padding:14px;margin:0 auto 12px;width:fit-content;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+
+        .pay-info{text-align:center;margin-bottom:12px}
+        .pay-amount{font-size:32px;font-weight:900;color:var(--wa);margin-bottom:2px;letter-spacing:-1px}
+        .pay-plan{font-size:12px;color:var(--muted);margin-bottom:6px}
+        .pay-upi-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+        .pay-upi{display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.15);border-radius:8px;padding:5px 12px;font-size:11px;color:var(--wa);font-weight:600}
+        .pay-upi-copy{background:none;border:none;color:var(--wa);cursor:pointer;font-size:11px;margin-left:2px;font-weight:700;transition:color 0.2s}
+
+        .divider{height:1px;background:var(--border);margin:4px 0 14px}
+
+        .utr-section{}
+        .utr-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+        .utr-label .optional{font-size:10px;color:#5a6b75;font-weight:400;font-style:italic}
+        .utr-input{width:100%;padding:10px 12px;background:var(--input);border:1.5px solid transparent;border-radius:10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:all 0.25s}
+        .utr-input::placeholder{color:#5a6b75;font-size:12px}
+        .utr-input:focus{border-color:var(--wa);box-shadow:0 0 0 3px rgba(37,211,102,0.1)}
+        .btn-submit-utr{width:100%;padding:12px;margin-top:10px;background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
+        .btn-submit-utr::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);animation:shimmer 2.5s infinite}
+        .btn-submit-utr:hover{box-shadow:0 6px 20px rgba(37,211,102,0.4);transform:translateY(-1px)}
+        .btn-submit-utr:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+        .steps-mini{display:flex;gap:6px;margin-top:14px;justify-content:center;padding-top:12px;border-top:1px solid var(--border)}
+        .step-mini{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted)}
+        .step-mini .num{width:16px;height:16px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:var(--wa)}
+        .step-mini .arr{color:#3a4a53;font-size:10px}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+        @keyframes pulseDot{0%,100%{opacity:1;box-shadow:0 0 8px var(--wa)}50%{opacity:0.4;box-shadow:0 0 4px var(--wa)}}
+
+        @media(max-width:900px){.plans{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:560px){.plans{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="wa-pattern"></div>
+
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span class="green">Botify</span></div>
+    <a href="/">← Dashboard</a>
+</div>
+
+<div class="page">
+    <div class="container">
+
+        <div class="header-card">
+            <div>
+                <h2>⚡ Upgrade Your Plan</h2>
+                <p>More messages per day = more customers served automatically!</p>
+            </div>
+            <div class="current-chip">
+                <div class="label">Current Plan</div>
+                <div class="value">{{ plan.plan_name | upper }} · {{ plan.daily_limit }} msg/day</div>
+            </div>
+        </div>
+
+        <div class="safety">
+            <span class="dot"></span>
+            ⚡ Each message has a <strong>&nbsp;1-second delay&nbsp;</strong> between sends for WhatsApp safety & anti-ban protection
+        </div>
+
+        {% if plan.plan_name == 'free' %}
+        <div class="pending-banner" id="pendingBanner" style="display:none;">
+            <div class="p-icon">⏳</div>
+            <div>
+                <h4>Payment Pending Confirmation</h4>
+                <p>Your payment is waiting for admin confirmation. Usually confirmed within 1 hour.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="plans-title">Choose Your Plan</div>
+
+        <!-- ROW 1 -->
+        <div class="plans">
+            <div class="plan {{ 'current' if plan.plan_name == 'free' else '' }}">
+                <div class="tag tag-free">🎁 Free Forever</div>
+                <div class="p-emoji">🌱</div>
+                <div class="p-name">Free</div>
+                <div class="p-price"><span class="cur">₹</span>0 <span class="per">/ forever</span></div>
+                <div class="p-limit">8 messages / day</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> 1 WhatsApp Bot</li>
+                    <li><span class="ck">✓</span> <span class="hl">8 messages/day</span></li>
+                    <li><span class="ck">✓</span> Basic auto-reply</li>
+                    <li><span class="ck">✓</span> Booking management</li>
+                    <li class="off"><span class="ck">—</span> No analytics</li>
+                    <li class="off"><span class="ck">—</span> No broadcast</li>
+                </ul>
+                {% if plan.plan_name == 'free' %}
+                <a href="/" class="btn-pay btn-free" style="display:inline-block; text-decoration:none; margin-top:auto;">Continue to Dashboard →</a>
+                {% else %}
+                <form action="/select-plan/free" method="POST" style="width:100%; margin-top:auto;">
+                    <button type="submit" class="btn-pay btn-free" style="width:100%;">Activate Free Plan</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="plan popular {{ 'current' if plan.plan_name == 'starter' else '' }}" onclick="{% if plan.plan_name != 'starter' %}openPayment('starter', 49){% endif %}">
+                <div class="tag tag-pop">⭐ Most Popular</div>
+                <div class="p-emoji">🚀</div>
+                <div class="p-name">Starter</div>
+                <div class="p-price"><span class="cur">₹</span>49 <span class="per">/ 30 days</span></div>
+                <div class="p-limit">35 messages / day</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> 3 WhatsApp Bots</li>
+                    <li><span class="ck">✓</span> <span class="hl">35 messages/day</span></li>
+                    <li><span class="ck">✓</span> AI-powered replies</li>
+                    <li><span class="ck">✓</span> Booking management</li>
+                    <li><span class="ck">✓</span> Basic analytics</li>
+                    <li class="off"><span class="ck">—</span> No broadcast</li>
+                </ul>
+                <button class="btn-pay btn-green" {% if plan.plan_name == 'starter' %}disabled{% endif %}>
+                    {{ '✓ Current Plan' if plan.plan_name == 'starter' else 'Pay ₹49 →' }}
+                </button>
+            </div>
+
+            <div class="plan {{ 'current' if plan.plan_name == 'pro' else '' }}" onclick="{% if plan.plan_name != 'pro' %}openPayment('pro', 199){% endif %}">
+                <div class="p-emoji">💎</div>
+                <div class="p-name">Pro</div>
+                <div class="p-price"><span class="cur">₹</span>199 <span class="per">/ 30 days</span></div>
+                <div class="p-limit">120 messages / day</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> 5 WhatsApp Bots</li>
+                    <li><span class="ck">✓</span> <span class="hl">120 messages/day</span></li>
+                    <li><span class="ck">✓</span> Advanced AI replies</li>
+                    <li><span class="ck">✓</span> Full analytics</li>
+                    <li><span class="ck">✓</span> Broadcast (50/day)</li>
+                    <li><span class="ck">✓</span> Order engine</li>
+                </ul>
+                <button class="btn-pay btn-out" {% if plan.plan_name == 'pro' %}disabled{% endif %}>
+                    {{ '✓ Current Plan' if plan.plan_name == 'pro' else 'Pay ₹199 →' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="plans">
+            <div class="plan {{ 'current' if plan.plan_name == 'growth' else '' }}" onclick="{% if plan.plan_name != 'growth' %}openPayment('growth', 299){% endif %}">
+                <div class="p-emoji">📈</div>
+                <div class="p-name">Growth</div>
+                <div class="p-price"><span class="cur">₹</span>299 <span class="per">/ 30 days</span></div>
+                <div class="p-limit">500 messages / day</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> 10 WhatsApp Bots</li>
+                    <li><span class="ck">✓</span> <span class="hl">500 messages/day</span></li>
+                    <li><span class="ck">✓</span> Advanced AI replies</li>
+                    <li><span class="ck">✓</span> Full analytics + reports</li>
+                    <li><span class="ck">✓</span> Broadcast (200/day)</li>
+                    <li><span class="ck">✓</span> Priority support</li>
+                </ul>
+                <button class="btn-pay btn-out" {% if plan.plan_name == 'growth' %}disabled{% endif %}>
+                    {{ '✓ Current Plan' if plan.plan_name == 'growth' else 'Pay ₹299 →' }}
+                </button>
+            </div>
+
+            <div class="plan {{ 'current' if plan.plan_name == 'business' else '' }}" onclick="{% if plan.plan_name != 'business' %}openPayment('business', 499){% endif %}">
+                <div class="p-emoji">🏢</div>
+                <div class="p-name">Business</div>
+                <div class="p-price"><span class="cur">₹</span>499 <span class="per">/ 30 days</span></div>
+                <div class="p-limit">800 messages / day</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> 20 WhatsApp Bots</li>
+                    <li><span class="ck">✓</span> <span class="hl">800 messages/day</span></li>
+                    <li><span class="ck">✓</span> Custom AI training</li>
+                    <li><span class="ck">✓</span> Full analytics + reports</li>
+                    <li><span class="ck">✓</span> Unlimited broadcast</li>
+                    <li><span class="ck">✓</span> Dedicated support</li>
+                </ul>
+                <button class="btn-pay btn-out" {% if plan.plan_name == 'business' %}disabled{% endif %}>
+                    {{ '✓ Current Plan' if plan.plan_name == 'business' else 'Pay ₹499 →' }}
+                </button>
+            </div>
+
+            <div class="plan {{ 'current' if plan.plan_name == 'enterprise' else '' }}" onclick="{% if plan.plan_name != 'enterprise' %}openPayment('enterprise', 999){% endif %}">
+                <div class="tag tag-ult">🔥 Ultimate</div>
+                <div class="p-emoji">👑</div>
+                <div class="p-name">Enterprise</div>
+                <div class="p-price"><span class="cur">₹</span>999 <span class="per">/ 30 days</span></div>
+                <div class="p-limit">Unlimited messages</div>
+                <ul class="p-feats">
+                    <li><span class="ck">✓</span> Unlimited Bots</li>
+                    <li><span class="ck">✓</span> <span class="hl">Unlimited messages</span></li>
+                    <li><span class="ck">✓</span> Custom AI training</li>
+                    <li><span class="ck">✓</span> Full analytics + API</li>
+                    <li><span class="ck">✓</span> Unlimited broadcast</li>
+                    <li><span class="ck">✓</span> 24/7 dedicated support</li>
+                </ul>
+                <button class="btn-pay btn-gold" {% if plan.plan_name == 'enterprise' %}disabled{% endif %}>
+                    {{ '✓ Current Plan' if plan.plan_name == 'enterprise' else 'Pay ₹999 →' }}
+                </button>
+            </div>
+        </div>
+
+        <div class="how">
+            <h4>⚡ How It Works</h4>
+            <div class="how-steps">
+                <div class="how-step"><div class="hs-i">👆</div><div class="hs-n">1. Choose Plan</div><div class="hs-t">Pick any plan above</div></div>
+                <div class="how-step"><div class="hs-i">📱</div><div class="hs-n">2. Scan UPI QR</div><div class="hs-t">Pay via any UPI app</div></div>
+                <div class="how-step"><div class="hs-i">📝</div><div class="hs-n">3. Submit UTR</div><div class="hs-t">Enter transaction ref</div></div>
+                <div class="how-step"><div class="hs-i">🚀</div><div class="hs-n">4. Go Live!</div><div class="hs-t">Plan activates after verification</div></div>
+            </div>
+        </div>
+
+        <div class="bottom-note">
+            🔒 Secure UPI payments · ⚡ 1-sec delay per message for safety · <a href="/">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ UPI QR PAYMENT MODAL ═══ -->
+<div class="modal-overlay" id="payModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+
+        <div class="modal-header">
+            <h3>📱 Scan & Pay via UPI</h3>
+            <p>Scan with any UPI app to complete payment</p>
+            <div class="modal-apps">
+                <span>GPay</span>
+                <span>PhonePe</span>
+                <span>Paytm</span>
+                <span>BHIM</span>
+            </div>
+        </div>
+
+        <div class="pay-info">
+            <div class="pay-amount" id="modalAmount">₹49</div>
+            <div class="pay-plan" id="modalPlan">Starter Plan</div>
+        </div>
+
+        <div class="qr-box" id="qrContainer"></div>
+
+        <div class="pay-upi-row">
+            <span class="pay-upi">
+                UPI: <span id="modalUPI">loading...</span>
+                <button class="pay-upi-copy" onclick="copyUPI()">📋 Copy</button>
+            </span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="utr-section">
+            <label class="utr-label">
+                Transaction Ref / UTR No.
+                <span class="optional">(Optional)</span>
+            </label>
+            <input type="text" class="utr-input" id="utrInput" placeholder="Enter UTR if available (speeds up verification)">
+            <button class="btn-submit-utr" id="submitUtrBtn" onclick="submitUTR()">
+                ✅ I've Paid — Activate My Plan
+            </button>
+        </div>
+
+        <div class="steps-mini">
+            <div class="step-mini"><span class="num">1</span> Scan QR</div>
+            <div class="step-mini arr">→</div>
+            <div class="step-mini"><span class="num">2</span> Pay ₹<span id="miniAmt">49</span></div>
+            <div class="step-mini arr">→</div>
+            <div class="step-mini"><span class="num">3</span> Click above</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPlan = '';
+    let currentOrderId = '';
+
+    window.addEventListener('load', async () => {
+        try {
+            const res = await fetch('/api/payment-status');
+            const data = await res.json();
+            if (data.payment_status === 'submitted' && data.current_plan === 'free') {
+                const banner = document.getElementById('pendingBanner');
+                if (banner) banner.style.display = 'flex';
+            }
+        } catch(e) {}
+    });
+
+    function openPayment(plan, amount) {
+        currentPlan = plan;
+
+        fetch('/api/create-razorpay-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: plan })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // UPI QR mode
+                if (data.upi_qr) {
+                    showQRModal(data);
+                    return;
+                }
+                // Razorpay checkout mode
+                openRazorpayCheckout(data);
+            } else {
+                alert('Error: ' + (data.error || 'Could not create order'));
+            }
+        })
+        .catch(() => alert('Network error. Try again.'));
+    }
+
+    function showQRModal(data) {
+        currentOrderId = data.order_id;
+
+        document.getElementById('modalAmount').textContent = '₹' + data.amount;
+        document.getElementById('modalPlan').textContent = data.plan_name + ' Plan';
+        document.getElementById('modalUPI').textContent = data.upi_id;
+        document.getElementById('miniAmt').textContent = data.amount;
+
+        // Generate QR code
+        const container = document.getElementById('qrContainer');
+        container.innerHTML = '';
+        new QRCode(container, {
+            text: data.upi_link,
+            width: 160,
+            height: 160,
+            colorDark: '#075E54',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        document.getElementById('utrInput').value = '';
+        document.getElementById('payModal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('payModal').classList.remove('show');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('payModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    function copyUPI() {
+        const upi = document.getElementById('modalUPI').textContent;
+        navigator.clipboard.writeText(upi).then(() => {
+            const btn = document.querySelector('.pay-upi-copy');
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+        });
+    }
+
+    function submitUTR() {
+        const utr = document.getElementById('utrInput').value.trim();
+
+        const btn = document.getElementById('submitUtrBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Submitting...';
+
+        fetch('/api/submit-upi-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: currentOrderId, utr: utr })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                closeModal();
+                window.location.href = '/payment/success?plan=' + currentPlan;
+            } else {
+                window.location.href = '/payment/failed';
+            }
+        })
+        .catch(() => {
+            window.location.href = '/payment/failed';
+        });
+    }
+
+    function openRazorpayCheckout(orderData) {
+        const options = {
+            key: orderData.key_id,
+            amount: orderData.amount,
+            currency: 'INR',
+            name: 'Botify',
+            description: orderData.plan.charAt(0).toUpperCase() + orderData.plan.slice(1) + ' Plan',
+            order_id: orderData.razorpay_order_id,
+            prefill: { name: orderData.user_name, email: orderData.user_email },
+            theme: { color: '#25D366' },
+            handler: function(response) { verifyRazorpayPayment(response); }
+        };
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response){
+            window.location.href = '/payment/failed';
+        });
+        rzp.open();
+    }
+
+    function verifyRazorpayPayment(paymentResponse) {
+        fetch('/api/verify-razorpay-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/payment/success?plan=' + currentPlan;
+            } else {
+                window.location.href = '/payment/failed';
+            }
+        })
+        .catch(() => {
+            window.location.href = '/payment/failed';
+        });
+    }
+</script>
+</body>
+</html>

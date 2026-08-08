@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #25D366;
+            --green-dark: #128C7E;
+            --bg: #0b141a;
+            --card: #111b21;
+            --card2: #0d1526;
+            --border: #233138;
+            --text: #e9edef;
+            --muted: #8696a0;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: rgba(17,24,39,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .navbar-brand span { color: var(--green); }
+        .navbar-right { display: flex; align-items: center; gap: 16px; }
+        .navbar-right a { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; transition: color .2s; }
+        .navbar-right a:hover { color: var(--text); }
+        .logout-btn { background: rgba(239,68,68,0.1); color: #ef4444 !important; border: 1px solid rgba(239,68,68,0.2); padding: 5px 14px; border-radius: 8px; font-size: 12px !important; }
+
+        /* ── MESSAGE COUNT BAR ── */
+        .count-bar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 28px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .count-bar-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+        .count-track { flex: 1; min-width: 180px; max-width: 320px; background: var(--border); border-radius: 999px; height: 8px; overflow: hidden; }
+        .count-fill { height: 100%; border-radius: 999px; transition: width .6s ease; background: var(--green); }
+        .count-fill.warn { background: var(--yellow); }
+        .count-fill.danger { background: var(--red); }
+        .count-numbers { font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .count-numbers .sep { color: var(--muted); margin: 0 3px; }
+        .count-numbers .total { color: var(--muted); }
+        .count-plan-badge {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .5px; padding: 3px 10px; border-radius: 999px;
+            background: rgba(37,211,102,0.12); color: var(--green); border: 1px solid rgba(37,211,102,0.25);
+        }
+        .count-plan-badge.free { background: rgba(107,114,128,0.15); color: var(--muted); border-color: var(--border); }
+        .max-reached-bar {
+            background: rgba(239,68,68,0.08);
+            border-bottom: 1px solid rgba(239,68,68,0.2);
+            padding: 8px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .max-reached-bar p { font-size: 13px; color: #ef4444; font-weight: 500; }
+        .max-reached-bar a { font-size: 12px; font-weight: 700; color: var(--green); text-decoration: none; white-space: nowrap; padding: 5px 14px; border: 1px solid var(--green); border-radius: 8px; transition: background .2s; }
+        .max-reached-bar a:hover { background: rgba(37,211,102,0.1); }
+
+        /* ── CONTAINER ── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 28px 40px; }
+
+        /* ── FLASH ── */
+        .flash { padding: 10px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
+        .flash.success { background: rgba(37,211,102,0.1); color: var(--green); border: 1px solid rgba(37,211,102,0.2); }
+        .flash.error { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+        /* ── WELCOME CARD ── */
+        .welcome-card {
+            background: linear-gradient(135deg, #111827 0%, #0d1a2d 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .welcome-card h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .welcome-card p { font-size: 13px; color: var(--muted); }
+        .plan-chip {
+            background: rgba(37,211,102,0.08);
+            border: 1px solid rgba(37,211,102,0.2);
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .plan-chip .plan-name { font-size: 16px; font-weight: 800; color: var(--green); }
+        .plan-chip .plan-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .plan-chip a { display: block; font-size: 11px; color: var(--green); text-decoration: none; margin-top: 6px; opacity: .8; }
+        .plan-chip a:hover { opacity: 1; }
+
+        /* ── QUICK ACTIONS ── */
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+        .quick-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+            transition: all .2s;
+        }
+        .quick-btn:hover { border-color: var(--green); background: rgba(37,211,102,0.05); color: var(--green); }
+        .quick-btn span { display: block; font-size: 22px; margin-bottom: 5px; }
+
+        /* ── SECTION HEADER ── */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .section-header h3 { font-size: 16px; font-weight: 800; color: #fff; }
+        .section-header .bot-meta { font-size: 12px; color: var(--muted); }
+
+        /* ── BOT CARD ── */
+        .bot-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            transition: border-color .2s;
+        }
+        .bot-card:hover { border-color: rgba(37,211,102,0.3); }
+        .bot-card.maxed { border-color: rgba(239,68,68,0.3); }
+        .bot-info h4 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+        .bot-info p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+        .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(37,211,102,0.1); color: var(--green); border: 1px solid rgba(37,211,102,0.2); margin-right: 4px; }
+        .badge-red { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.2); }
+        .bot-actions { text-align: right; min-width: 140px; }
+        .status-active { color: var(--green); font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+        .status-inactive { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+        .max-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px; }
+
+        /* ── BUTTONS ── */
+        .btn { background: linear-gradient(135deg, var(--wa), var(--wa2)); color: #fff; padding: 8px 18px; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block; transition: all .2s; }
+        .btn:hover { box-shadow: 0 4px 14px rgba(37,211,102,0.3); transform: translateY(-1px); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-disconnect { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); padding: 6px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; display: inline-block; text-decoration: none; transition: background .2s; }
+        .btn-disconnect:hover { background: rgba(239,68,68,0.2); }
+        .btn-secondary { background: rgba(37,211,102,0.1); color: var(--green); border: 1px solid rgba(37,211,102,0.25); padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-block; transition: background .2s; }
+        .btn-secondary:hover { background: rgba(37,211,102,0.2); }
+        .btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 4px 10px; border-radius: 8px; font-size: 11px; text-decoration: none; display: inline-block; }
+        .btn-upgrade { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-block; }
+
+        /* ── GRID ── */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
+        .card h3 { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* ── SERVICE / INFO ITEMS ── */
+        .service-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .service-item:last-child { border-bottom: none; }
+        .service-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .service-price { font-size: 13px; font-weight: 700; color: var(--green); }
+        .service-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .info-item { font-size: 13px; color: var(--muted); padding: 7px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+        .info-item:last-child { border-bottom: none; }
+
+        /* ── BOOKINGS ── */
+        .booking-item { padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .booking-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+        .booking-detail { font-size: 12px; color: var(--muted); }
+
+        /* ── EMPTY ── */
+        .empty { text-align: center; color: var(--muted); padding: 20px; font-size: 13px; }
+        .empty a { color: var(--green); text-decoration: none; font-weight: 600; }
+
+        /* ── PENDING PAYMENT BANNER ── */
+        .pending-banner {
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .pending-banner p { font-size: 13px; color: var(--yellow); }
+        .pending-banner a { font-size: 12px; color: var(--muted); text-decoration: none; }
+
+        @media (max-width: 640px) {
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .grid { grid-template-columns: 1fr; }
+            .count-bar { gap: 10px; }
+            .count-track { min-width: 120px; }
+            .welcome-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-brand">🤖 <span style="color:var(--green)">Botify</span></div>
+        <div class="navbar-right">
+            <a href="/menu">🍽️ Catalog</a>
+            <a href="/orders">🛒 Orders{% if pending_orders > 0 %} <span style="background:#ef4444;color:#fff;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:700;">{{ pending_orders }}</span>{% endif %}</a>
+            <a href="/live-chat">💬 Live Inbox</a>
+            <a href="/analytics">📊 Analytics</a>
+            <a href="/broadcast">📢 Broadcast</a>
+            <a href="/business-info">🏢 Settings</a>
+            <span style="font-size:13px;color:var(--muted);">{{ user.name }}</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <!-- ✅ MAX LIMIT WARNING BAR (server-rendered, refreshed by JS) -->
+    <div id="maxReachedBar" style="display:{% if today_count >= plan.daily_limit %}flex{% else %}none{% endif %};" class="max-reached-bar">
+        <p>🚫 Daily message limit reached! Your bot cannot reply until tomorrow or you upgrade.</p>
+        <a href="/upgrade">⚡ Upgrade Now</a>
+    </div>
+
+    <!-- MESSAGE COUNT BAR -->
+    {% set pct = ((today_count / plan.daily_limit) * 100) | int if plan.daily_limit > 0 else 0 %}
+    <div class="count-bar">
+        <span class="count-bar-label">Today's Messages</span>
+        <div class="count-track">
+            <!-- ✅ id added so JS can update width live -->
+            <div id="countFill" class="count-fill {% if pct >= 100 %}danger{% elif pct >= 70 %}warn{% endif %}" style="width: {{ [pct, 100] | min }}%;"></div>
+        </div>
+        <div class="count-numbers">
+            <!-- ✅ ids added so JS can update numbers live -->
+            <span id="countUsed" class="used" style="color:{% if pct >= 100 %}#ef4444{% elif pct >= 70 %}#f59e0b{% else %}#e5e7eb{% endif %};">{{ today_count }}</span>
+            <span class="sep">/</span>
+            <span id="countTotal" class="total">{{ plan.daily_limit }}</span>
+        </div>
+        <span class="count-plan-badge {{ 'free' if plan.plan_name == 'free' else '' }}" id="planBadge">
+            {{ plan.plan_name | upper }}
+        </span>
+        {% if plan.days_left is not none %}
+        <span style="font-size:12px;color:var(--yellow);">⏳ {{ plan.days_left }} days left</span>
+        {% endif %}
+        {% if plan.plan_name == 'free' %}
+        <a href="/upgrade" style="font-size:12px;color:var(--green);text-decoration:none;font-weight:600;white-space:nowrap;">⚡ Upgrade →</a>
+        {% endif %}
+    </div>
+
+    <!-- CONTAINER -->
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash {{ category if category in ['success','error'] else 'success' }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- ✅ PENDING PAYMENT NOTICE — shown if user paid but admin not approved yet -->
+        {% set latest_payment = namespace(status='none') %}
+        <!-- This is handled via JS polling /api/payment-status -->
+        <div id="pendingPaymentBanner" class="pending-banner" style="display:none;">
+            <p>⏳ Your payment is under review. Plan will activate once admin approves (usually within 1 hour).</p>
+            <a href="#" onclick="checkPaymentStatus()">Refresh status</a>
+        </div>
+
+        <!-- WELCOME -->
+        <div class="welcome-card">
+            <div>
+                <h2>Welcome, {{ user.name }}! 👋</h2>
+                <p>Business: <strong style="color:var(--text);">{{ user.business_name or 'Not set' }}</strong> &nbsp;|&nbsp; WhatsApp: {{ user.whatsapp_number or 'Not set' }}</p>
+            </div>
+            <div class="plan-chip">
+                <div class="plan-name">{{ plan.plan_name | title }} Plan</div>
+                <!-- ✅ id added so JS can refresh live -->
+                <div class="plan-sub" id="planSubText">{{ bot_count }}/{{ bot_limit }} bots &nbsp;·&nbsp; {{ today_count }}/{{ plan.daily_limit }} msgs today</div>
+                {% if plan.plan_name != 'pro' and plan.plan_name != 'business' %}
+                <a href="/upgrade">Upgrade →</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions" style="grid-template-columns:repeat(6,1fr);">
+            <a href="/create-bot"  class="quick-btn"><span>🤖</span>Bot Setup</a>
+            <a href="/menu"        class="quick-btn"><span>📋</span>Catalog</a>
+            <a href="/orders"      class="quick-btn"><span>🛒</span>Orders{% if pending_orders > 0 %}<br><small style="color:#ef4444;font-size:10px;">{{ pending_orders }} new</small>{% endif %}</a>
+            <a href="/live-chat"   class="quick-btn"><span>💬</span>Live Inbox</a>
+            <a href="/broadcast"   class="quick-btn"><span>📢</span>Broadcast</a>
+            <a href="/business-info" class="quick-btn"><span>🏢</span>Settings</a>
+        </div>
+
+        <!-- BOTS SECTION -->
+        <div class="section-header">
+            <h3>🤖 Your Bots</h3>
+            <span class="bot-meta">{{ bot_count }} / {{ bot_limit }} bots used
+                {% if can_create %}
+                &nbsp;·&nbsp; <a href="/create-bot" style="color:var(--green);text-decoration:none;font-weight:600;">+ New Bot</a>
+                {% else %}
+                &nbsp;·&nbsp; <a href="/upgrade" style="color:var(--yellow);text-decoration:none;font-weight:600;">Upgrade for more</a>
+                {% endif %}
+            </span>
+        </div>
+
+        {% if bots %}
+            {% for bot in bots %}
+            {% set is_maxed = today_count >= plan.daily_limit %}
+            <div class="bot-card {{ 'maxed' if is_maxed else '' }}" id="botCard{{ bot.id }}">
+                <div class="bot-info">
+                    <h4>
+                        🤖 {{ bot.bot_name }}
+                        {% if is_maxed %}
+                        <span class="badge badge-red">🚫 Max Reached</span>
+                        {% endif %}
+                    </h4>
+                    <p>{{ bot.welcome_message }}</p>
+                    {% if bot.features %}
+                        {% for feature in bot.features.split(',') %}
+                            <span class="badge">{{ feature.strip() }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="bot-actions">
+                    {% if is_maxed %}
+                    <div class="max-badge">🚫 Daily Limit Reached</div><br>
+                    <a href="/upgrade" class="btn-upgrade">⚡ Upgrade</a>
+                    {% elif bot.is_active %}
+                        <p class="status-active">🟢 Active</p>
+                        <a href="#" onclick="disconnectBot({{ bot.user_id }})" class="btn-disconnect">🔌 Disconnect</a>
+                    {% else %}
+                        <p class="status-inactive">🔴 Inactive</p>
+                        <a href="/connect/{{ bot.id }}" class="btn btn-sm">📱 Connect</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:30px;">
+                <p style="font-size:15px;margin-bottom:8px;">No bots yet!</p>
+                <a href="/create-bot">+ Create your first bot</a>
+            </div>
+        {% endif %}
+
+        <!-- SERVICES + BUSINESS GRID -->
+        <div class="grid" style="margin-top:20px;">
+            <div class="card">
+                <h3>🛎️ Services
+                    <a href="/add-service" class="btn-secondary" style="font-size:11px;">+ Add</a>
+                </h3>
+                {% if services %}
+                    {% for service in services %}
+                    <div class="service-item">
+                        <div>
+                            <div class="service-name">{{ service.service_name }}</div>
+                            <div class="service-desc">{{ service.description }}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="service-price">₹{{ service.price }}</div>
+                            <a href="/delete-service/{{ service.id }}" class="btn-danger" onclick="return confirm('Delete?')">🗑️</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty"><p>No services yet!</p><p style="font-size:11px;margin-top:4px;">Add services → Bot will show them</p></div>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h3>🏢 Business Info
+                    <a href="/business-info" class="btn-secondary" style="font-size:11px;">✏️ Edit</a>
+                </h3>
+                {% if business %}
+                    <div class="info-item">📍 {{ business.address }}</div>
+                    <div class="info-item">⏰ {{ business.timings }}</div>
+                    {% if business.website %}<div class="info-item">🌐 {{ business.website }}</div>{% endif %}
+                    {% if business.extra_info %}<div class="info-item">ℹ️ {{ business.extra_info }}</div>{% endif %}
+                {% else %}
+                    <div class="empty"><p>No business info yet!</p><p style="font-size:11px;margin-top:4px;"><a href="/business-info">Add info →</a></p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- BOOKINGS -->
+        <div class="card" id="bookings">
+            <h3>📅 Recent Bookings</h3>
+            {% if bookings %}
+                {% for booking in bookings %}
+                <div class="booking-item">
+                    <div class="booking-name">{{ booking.customer_name }} — {{ booking.service }}</div>
+                    <div class="booking-detail">📱 {{ booking.customer_phone }} &nbsp;|&nbsp; 🕐 {{ booking.date_time }} &nbsp;|&nbsp; {{ booking.status }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty"><p>No bookings yet — customers will book via WhatsApp!</p></div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script>
+        // ─────────────────────────────────────────────
+        // ✅ LIVE MESSAGE COUNT REFRESH (every 30s)
+        // Updates count bar without page reload
+        // ─────────────────────────────────────────────
+        const dailyLimit = {{ plan.daily_limit }};
+
+        async function refreshMsgCount() {
+            try {
+                const res  = await fetch('/api/msg-count')
+                const data = await res.json()
+
+                const count = data.today_count
+                const limit = data.daily_limit
+                const pct   = Math.min(Math.round((count / limit) * 100), 100)
+
+                // Update bar width
+                const fill = document.getElementById('countFill')
+                fill.style.width = pct + '%'
+                fill.className = 'count-fill' + (pct >= 100 ? ' danger' : pct >= 70 ? ' warn' : '')
+
+                // Update numbers
+                document.getElementById('countUsed').textContent  = count
+                document.getElementById('countTotal').textContent = limit
+                document.getElementById('countUsed').style.color  =
+                    pct >= 100 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#e5e7eb'
+
+                // Update plan sub text
+                const planSub = document.getElementById('planSubText')
+                if (planSub) {
+                    const botPart = planSub.textContent.split('·')[0].trim()
+                    planSub.innerHTML = `${botPart} &nbsp;·&nbsp; ${count}/${limit} msgs today`
+                }
+
+                // Show/hide limit warning bar
+                const maxBar = document.getElementById('maxReachedBar')
+                if (maxBar) maxBar.style.display = pct >= 100 ? 'flex' : 'none'
+
+            } catch (err) {
+                console.log('Count refresh error:', err)
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // ✅ PAYMENT STATUS CHECK
+        // Shows pending banner if user paid but admin not approved yet
+        // ─────────────────────────────────────────────
+        async function checkPaymentStatus() {
+            try {
+                const res  = await fetch('/api/payment-status')
+                const data = await res.json()
+
+                const banner = document.getElementById('pendingPaymentBanner')
+                if (data.payment_status === 'submitted' && !data.plan_activated) {
+                    banner.style.display = 'flex'
+                } else {
+                    banner.style.display = 'none'
+                }
+
+                // If plan was just activated, reload page to show new plan
+                if (data.plan_activated && data.current_plan !== 'free') {
+                    const currentBadge = document.getElementById('planBadge')
+                    if (currentBadge && currentBadge.textContent.trim() === 'FREE') {
+                        window.location.reload()
+                    }
+                }
+            } catch (err) {
+                console.log('Payment status check error:', err)
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // DISCONNECT BOT
+        // ─────────────────────────────────────────────
+        async function disconnectBot(userId) {
+            if (confirm('Disconnect WhatsApp bot?')) {
+                const res = await fetch(`/api/disconnect/${userId}`)
+                window.location.reload()
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // START: refresh every 30s
+        // ─────────────────────────────────────────────
+        setInterval(refreshMsgCount,    30000)   // Live count every 30s
+        setInterval(checkPaymentStatus, 60000)   // Payment status every 60s
+
+        // Run once on load
+        checkPaymentStatus()
+    </script>
+
+    <!-- ── FLOATING HELP & SUPPORT WIDGET (With App Language, Disclaimer, Call/WhatsApp, and Quick Guides) ── -->
+    <style>
+        .floating-help-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .help-trigger-btn {
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            border: none;
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 999px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(37,211,102,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        
+        .help-trigger-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 40px rgba(37,211,102,0.45);
+        }
+        
+        .help-icon {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .help-badge {
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+        
+        .help-deck-card {
+            position: absolute;
+            bottom: 74px;
+            right: 0;
+            width: 320px;
+            background: rgba(17, 27, 33, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .help-header {
+            padding: 14px 18px;
+            background: rgba(37, 211, 102, 0.08);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .help-header h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+        }
+        
+        .help-header button {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .help-header button:hover {
+            color: #fff;
+        }
+        
+        .help-body {
+            padding: 16px;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        
+        .help-section {
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+        }
+        
+        .help-section:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .help-section label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .help-section select {
+            width: 100%;
+            background: #0b141a;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        
+        .support-contacts {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .help-action-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .help-action-btn {
+            flex: 1;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 7px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .help-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .help-action-btn.wa-support {
+            background: rgba(37, 211, 102, 0.1);
+            color: var(--green);
+            border-color: rgba(37, 211, 102, 0.2);
+        }
+        
+        .help-action-btn.wa-support:hover {
+            background: rgba(37, 211, 102, 0.15);
+        }
+        
+        .guide-links-container {
+            display: block;
+        }
+        
+        .guide-link {
+            font-size: 12px;
+            color: var(--text);
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        
+        .guide-link:hover {
+            border-color: var(--green);
+            background: rgba(37, 211, 102, 0.05);
+        }
+        
+        .guide-content-box {
+            background: #0b141a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text);
+            margin-top: 10px;
+        }
+        
+        .btn-close-guide {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 4px 8px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        
+        .help-disclaimer {
+            font-size: 9px;
+            color: #a8a29e;
+            line-height: 1.4;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px dashed rgba(239, 68, 68, 0.2);
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+    </style>
+
+    <div class="floating-help-container">
+        <!-- Floating Support Card -->
+        <div class="help-deck-card" id="helpDeckCard">
+            <div class="help-header">
+                <h4>🛎️ Help & Support</h4>
+                <button onclick="toggleHelpDeck()">&times;</button>
+            </div>
+            
+            <div class="help-body">
+                <!-- 1. Language Toggle -->
+                <div class="help-section">
+                    <label id="lblLangSelect">🌐 App Display Language</label>
+                    <select id="appLangSelect" onchange="changeLanguage()">
+                        <option value="en">English</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                    </select>
+                </div>
+                
+                <!-- 2. Contacts List -->
+                <div class="help-section">
+                    <label id="lblSupportDetails">📞 Customer Support</label>
+                    <div class="support-contacts">
+                        <p>✉️ mukilarasu2005@gmail.com</p>
+                        <p>📞 +91 9080030538</p>
+                    </div>
+                    <div class="help-action-row">
+                        <a href="tel:+919080030538" class="help-action-btn">📞 Call Us</a>
+                        <a href="https://wa.me/919080030538" target="_blank" class="help-action-btn wa-support">💬 WhatsApp</a>
+                    </div>
+                </div>
+
+                <!-- 3. Dynamic Quick Guides -->
+                <div class="help-section">
+                    <label id="lblGuidesHeader">📖 Support Guides</label>
+                    <div id="guideList" class="guide-links-container">
+                        <div class="guide-link" onclick="showGuide('link-bot')">🔑 How to link WhatsApp?</div>
+                        <div class="guide-link" onclick="showGuide('orders')">🛒 How does ordering work?</div>
+                        <div class="guide-link" onclick="showGuide('payment')">💳 Manual plan activation?</div>
+                    </div>
+                    
+                    <!-- Guide Content Display -->
+                    <div id="guideContentBox" class="guide-content-box" style="display: none;">
+                        <p id="guideText" style="margin-bottom: 8px;"></p>
+                        <button onclick="closeGuide()" class="btn-close-guide">← Back to List</button>
+                    </div>
+                </div>
+
+                <!-- 4. Floating Disclaimer Box -->
+                <div class="help-disclaimer" id="lblLegalDisclaimer">
+                    ⚠️ <strong>Disclaimer:</strong> Botify is an independent SaaS service and is not affiliated, associated, or endorsed by WhatsApp, Meta Inc., or its subsidiaries. Keep bot delay times active to prevent risk of account bans.
+                </div>
+            </div>
+        </div>
+
+        <!-- Float Trigger Button -->
+        <button class="help-trigger-btn" id="helpTriggerBtn" onclick="toggleHelpDeck()">
+            <span class="help-icon">❓</span>
+            <span class="help-badge">Help</span>
+        </button>
+    </div>
+
+    <script>
+        // ── FLOATING TABS AND DRAWER INTERACTIONS ──
+        function toggleHelpDeck() {
+            const card = document.getElementById('helpDeckCard');
+            if (card.style.display === 'none' || card.style.display === '') {
+                card.style.display = 'flex';
+                closeGuide(); // always reset guide view
+            } else {
+                card.style.display = 'none';
+            }
+        }
+
+        const guideTexts = {
+            english: {
+                'link-bot': '🔑 <strong>How to link WhatsApp:</strong> Go to bot setup and create a bot config. Tap "🖥️ Connect" to view your customized dynamic QR. Open WhatsApp on your target cell phone -> Linked Devices -> Link device -> Scan the screen display QR. Your chatbot activates immediately!',
+                'orders': '🛒 <strong>Ordering:</strong> When a user starts texting, our Llama 3.3 groq AI scans the dialog catalog items. It takes their list, builds a JSON total table, writes a downloadable PDF receipt, sends a dynamic scan-to-pay UPI QR code graphics card, & alerts you on the dashboard.',
+                'payment': '💳 <strong>Manual Plan Activation:</strong> Select a dynamic plan key to launch the checkout popup. Scan the displayed merchant UPI code, complete your transfer via any mobile payment application (Paytm/GPay), and input your transaction UTR reference code. The Botify Admin will verify and activate your premium account immediately.'
+            },
+            tamil: {
+                'link-bot': '🔑 <strong>வாட்ஸ்அப் எவ்வாறு இணைப்பது:</strong> போட் அமைப்பிற்குச் சென்று ஒரு போட்டை உருவாக்கவும். உங்கள் QR குறியீட்டைப் பார்க்க "🖥️ Connect" என்பதை அழுத்தவும். உங்கள் மொபைலில் வாட்ஸ்அப் திறந்து -> Linked Devices -> Link device என்பதைத் அழுத்தி QR குறியீட்டை ஸ்கேன் செய்யவும். போட் தயாராகிவிடும்!',
+                'orders': '🛒 <strong>ஆர்டர் எவ்வாறு செயல்படுகிறது:</strong> ஒரு வாடிக்கையாளர் மெசேஜ் செய்யும் போது, ​​எங்கள் Llama AI மெனு கார்டைப் பகுப்பாய்வு செய்கிறது. இது மொத்த தொகையைக் கணக்கிட்டு, PDF ரசீது மற்றும் UPI கட்டண QR கார்டை வாடிக்கையாளருக்கு தானாகவே அனுப்பி, உங்களுக்குத் அறிவிக்கும்.',
+                'payment': '💳 <strong>மேனுவல் சந்தா செயல்படுத்தல்:</strong> நீங்கள் விரும்பிய பிளானை தேர்ந்தெடுத்ததும் தோன்றும் UPI குறியீட்டை ஸ்கேன் செய்து பணத்தைச் செலுத்தவும். பின்னர் உங்கள் பரிவர்த்தனை UTR எண்ணை உள்ளிடவும். அட்மின் அதைச் சரிபார்த்து உடனே உங்கள் கணக்கை பிரீமியமாக மாற்றுவார்.'
+            },
+            hindi: {
+                'link-bot': '🔑 <strong>व्हाट्सएप कैसे लिंक करें:</strong> बॉट सेटअप पर जाएं और एक बॉट बनाएं। अपना क्यूआर कोड देखने के लिए "🖥️ Connect" दबाएं। अपने फोन पर व्हाट्सएप खोलें -> लिंक किए गए डिवाइस -> लिंक डिवाइस पर टैप करें और क्यूआर कोड को स्कैन करें। आपका बॉट एक्टिव हो जाएगा!',
+                'orders': '🛒 <strong>ऑर्डर कैसे काम करता है:</strong> जब कोई ग्राहक संदेश भेजता है, तो हमारा Llama AI मेनू का विश्लेषण करता है। यह कुल राशि की गणना करता है, एक पीडीएफ रसीद और यूपीआई क्यूआर कार्ड भेजता है, और आपको डैशबोर्ड पर सूचित करता है।',
+                'payment': '💳 <strong>मैनुअल सब्सक्रिप्शन एक्टिवेशन:</strong> अपनी पसंदीदा योजना चुनें, क्यूआर कोड को स्कैन करें और भुगतान करें। फिर अपना यूटीआर लेनदेन नंबर दर्ज करें। व्यवस्थापक इसे सत्यापित करेगा और प्रीमियम तुरंत सक्रिय करेगा।'
+            }
+        };
+
+        function showGuide(guideId) {
+            const currentLang = localStorage.getItem('botify_lang') || 'en';
+            const dict = currentLang === 'ta' ? guideTexts.tamil : (currentLang === 'hi' ? guideTexts.hindi : guideTexts.english);
+            
+            document.getElementById('guideList').style.display = 'none';
+            document.getElementById('guideContentBox').style.display = 'block';
+            document.getElementById('guideText').innerHTML = dict[guideId] || '';
+        }
+
+        function closeGuide() {
+            document.getElementById('guideList').style.display = 'block';
+            document.getElementById('guideContentBox').style.display = 'none';
+        }
+
+        // ── APP DISPLAY DICTIONARIES ──
+        const appTranslations = {
+            en: {
+                todayMsg: "Today's Messages",
+                bots: "Your Bots",
+                services: "Services",
+                bookings: "Recent Bookings",
+                welcome: "Welcome",
+                logout: "Logout",
+                help: "Help",
+                lblLang: "🌐 App Display Language",
+                lblSupport: "📞 Customer Support",
+                lblGuides: "📖 Support Guides",
+                lblLegal: "⚠️ <strong>Disclaimer:</strong> Botify is an independent SaaS service and is not affiliated, associated, or endorsed by WhatsApp, Meta Inc., or its subsidiaries. Keep bot delay times active to prevent risk of account bans."
+            },
+            ta: {
+                todayMsg: "இன்றைய செய்திகள்",
+                bots: "உங்கள் போட்கள்",
+                services: "சேவைகள்",
+                bookings: "சமீபத்திய முன்பதிவுகள்",
+                welcome: "வரவேற்கிறோம்",
+                logout: "வெளியேறு",
+                help: "உதவி",
+                lblLang: "🌐 பயன்பாட்டு மொழி",
+                lblSupport: "📞 வாடிக்கையாளர் சேவை",
+                lblGuides: "📖 உதவி வழிகாட்டிகள்",
+                lblLegal: "⚠️ <strong>பொறுப்புத் துறப்பு:</strong> பாடிஃபை (Botify) ஒரு தனித்துவமான போர்ட்டல் ஆகும், இது வாட்ஸ்அப் அல்லது மெட்டா நிறுவனத்துடன் நேரடியாக இணைந்து செயல்படவில்லை. கணக்கு முடக்கம் ஏற்படுவதைத் தவிர்க்க போட் தாமத நேரத்தை எப்போதும் பயன்படுத்தவும்."
+            },
+            hi: {
+                todayMsg: "आज के संदेश",
+                bots: "आपके बॉट्स",
+                services: "सेवाएं",
+                bookings: "हालिया बुकिंग",
+                welcome: "आपका स्वागत है",
+                logout: "लॉगआउट",
+                help: "सहायता",
+                lblLang: "🌐 ऐप की भाषा चुनें",
+                lblSupport: "📞 ग्राहक सहायता सेवा",
+                lblGuides: "📖 सहायता मार्गदर्शिकाएँ",
+                lblLegal: "⚠️ <strong>डिस्क्लेमर:</strong> बॉटिफ़ाई एक स्वतंत्र सेवा है और यह व्हाट्सएप या मेटा इंक से संबद्ध नहीं है। कृपया सुरक्षित उपयोग के लिए बॉट रिप्लाई टाइमर को हमेशा सक्रिय रखें।"
+            }
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('appLangSelect').value;
+            localStorage.setItem('botify_lang', lang);
+            applyLanguage(lang);
+            closeGuide();
+        }
+
+        function applyLanguage(lang) {
+            const dictionary = appTranslations[lang] || appTranslations.en;
+            
+            // 1. Counter translation:
+            const todayLabel = document.querySelector('.count-bar-label');
+            if (todayLabel) todayLabel.textContent = dictionary.todayMsg;
+            
+            // 2. Bots heading:
+            const botsHeading = document.querySelector('.section-header h3');
+            if (botsHeading) {
+                const subMeta = botsHeading.nextElementSibling;
+                botsHeading.innerHTML = `🤖 ${dictionary.bots}`;
+            }
+            
+            // 3. Services card:
+            const servicesHeading = document.querySelector('.grid .card:first-child h3');
+            if (servicesHeading) {
+                const btn = servicesHeading.querySelector('a');
+                servicesHeading.innerHTML = `🛎️ ${dictionary.services} `;
+                if (btn) servicesHeading.appendChild(btn);
+            }
+            
+            // 4. Bookings Card:
+            const bookingsHeading = document.querySelector('#bookings h3');
+            if (bookingsHeading) bookingsHeading.textContent = `📅 ${dictionary.bookings}`;
+            
+            // 5. Help Menu Headers & Translations:
+            const helpTitle = document.querySelector('.help-header h4');
+            if (helpTitle) helpTitle.textContent = `🛎️ ${dictionary.help} & Support`;
+            
+            const helpBadge = document.querySelector('.help-badge');
+            if (helpBadge) helpBadge.textContent = dictionary.help;
+
+            const lblLangSelect = document.getElementById('lblLangSelect');
+            if (lblLangSelect) lblLangSelect.textContent = dictionary.lblLang;
+
+            const lblSupportDetails = document.getElementById('lblSupportDetails');
+            if (lblSupportDetails) lblSupportDetails.textContent = dictionary.lblSupport;
+
+            const lblGuidesHeader = document.getElementById('lblGuidesHeader');
+            if (lblGuidesHeader) lblGuidesHeader.textContent = dictionary.lblGuides;
+
+            const lblLegalDisclaimer = document.getElementById('lblLegalDisclaimer');
+            if (lblLegalDisclaimer) lblLegalDisclaimer.innerHTML = dictionary.lblLegal;
+            
+            // 6. Navigation list:
+            const authGreeting = document.querySelector('.navbar-right span');
+            if (authGreeting) authGreeting.innerHTML = `👤 ${dictionary.welcome}, ${authGreeting.textContent.replace('👤', '').replace('Welcome,', '').trim()}`;
+            
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) logoutBtn.textContent = dictionary.logout;
+        }
+
+        // Apply saved language on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('botify_lang') || 'en';
+            document.getElementById('appLangSelect').value = savedLang;
+            applyLanguage(savedLang);
+        });
+    </script>
+</body>
+</html>

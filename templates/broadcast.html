@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Broadcast - Botify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--green:#00c896;--green-dark:#00a07a;--bg:#0a0f1e;--card:#111827;--border:#1f2937;--text:#e5e7eb;--muted:#6b7280;--red:#ef4444;--yellow:#f59e0b;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .navbar{background:rgba(17,24,39,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;justify-content:space-between;align-items:center;height:56px;position:sticky;top:0;z-index:100;}
+        .navbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;}
+        .navbar-brand span{color:var(--green);}
+        .navbar a{color:var(--muted);text-decoration:none;font-size:13px;}
+        .container{max-width:840px;margin:0 auto;padding:28px 20px;}
+        .page-header{margin-bottom:24px;}
+        .page-header h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+        .page-header p{font-size:13px;color:var(--muted);margin-top:3px;}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;}
+        .card h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;}
+        label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;}
+        textarea{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:120px;line-height:1.5;transition:border-color .2s;}
+        textarea:focus{outline:none;border-color:var(--green);}
+        .char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px;}
+        .btn{width:100%;padding:13px;background:var(--green);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:12px;}
+        .btn:hover{background:var(--green-dark);}
+        .btn:disabled{opacity:.5;cursor:not-allowed;}
+        .audience-chip{background:rgba(0,200,150,.08);border:1px solid rgba(0,200,150,.2);border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+        .audience-chip .icon{font-size:28px;}
+        .audience-chip h4{font-size:14px;font-weight:700;color:#fff;}
+        .audience-chip p{font-size:12px;color:var(--muted);}
+        .warning-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#f59e0b;line-height:1.5;}
+        .status-msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none;}
+        .status-msg.success{background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.2);display:block;}
+        .status-msg.error{background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2);display:block;}
+        .status-msg.loading{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);display:block;}
+        /* History */
+        .history-item{padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+        .history-msg{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.4;}
+        .history-meta{font-size:11px;color:var(--muted);}
+        .h-badge{display:inline-block;background:rgba(0,200,150,.1);color:var(--green);border:1px solid rgba(0,200,150,.2);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:600;margin-right:6px;}
+        /* Preview */
+        .preview-box{background:#1a2232;border:1px solid var(--border);border-radius:14px;padding:14px;min-height:80px;font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;font-family:'DM Sans',sans-serif;}
+        .preview-label{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+        .preview-label::before{content:'';display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;}
+        @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-brand">🤖 <span>Botify</span></div>
+    <div style="display:flex;gap:16px;align-items:center;">
+        <a href="/">← Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>📢 Broadcast Messages</h2>
+        <p>Send offers, announcements or reminders to all your WhatsApp customers at once.</p>
+    </div>
+
+    <div class="grid">
+        <!-- Compose -->
+        <div class="card">
+            <h3>✍️ Compose Message</h3>
+            <div class="audience-chip">
+                <div class="icon">👥</div>
+                <div>
+                    <h4>{{ customer_count }} Customers</h4>
+                    <p>All unique WhatsApp contacts who messaged your bot</p>
+                </div>
+            </div>
+
+            <label>Quick Templates</label>
+            <div class="quick-templates" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+                <button onclick="useTemplate('special')" style="padding:6px 10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:6px;color:var(--green);cursor:pointer;font-size:11px;">🎉 Special Offer</button>
+                <button onclick="useTemplate('reminder')" style="padding:6px 10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:6px;color:var(--green);cursor:pointer;font-size:11px;">⏰ Reminder</button>
+                <button onclick="useTemplate('new')" style="padding:6px 10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:6px;color:var(--green);cursor:pointer;font-size:11px;">🆕 New Item</button>
+                <button onclick="useTemplate('event')" style="padding:6px 10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:6px;color:var(--green);cursor:pointer;font-size:11px;">📅 Event</button>
+            </div>
+
+            <div class="warning-box">
+                ⚠️ Use responsibly — excessive broadcasts may result in WhatsApp restrictions. Recommended: max 1-2 per week.
+            </div>
+            <label>Your Message</label>
+            <textarea id="broadcastMsg" placeholder="🎉 Special offer today! Get 20% off on all items. Valid till 8 PM only. Reply MENU to see our menu!" oninput="updatePreview(this)"></textarea>
+            <div class="char-count" id="charCount">0 characters</div>
+
+            <button class="btn" id="sendBtn" onclick="sendBroadcast()">📢 Send to {{ customer_count }} Customers</button>
+            <div class="status-msg" id="statusMsg"></div>
+        </div>
+
+        <!-- Preview + tips -->
+        <div>
+            <div class="card" style="margin-bottom:16px;">
+                <h3>👁️ Preview</h3>
+                <div class="preview-label">WhatsApp message preview</div>
+                <div class="preview-box" id="previewBox">Your message will appear here...</div>
+            </div>
+            <div class="card">
+                <h3>💡 Broadcast Tips</h3>
+                <ul style="font-size:12px;color:var(--muted);padding-left:16px;line-height:1.9;">
+                    <li>Keep it short & clear (under 200 chars)</li>
+                    <li>Include a call-to-action (Reply MENU, Call us, etc.)</li>
+                    <li>Use emojis to grab attention 🎉</li>
+                    <li>Don't broadcast more than twice a week</li>
+                    <li>Personalize with your business name</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- History -->
+    {% if history %}
+    <div class="card" style="margin-top:16px;">
+        <h3>📋 Broadcast History</h3>
+        {% for log in history %}
+        <div class="history-item">
+            <div class="history-msg">{{ log.message }}</div>
+            <div class="history-meta">
+                <span class="h-badge">{{ log.recipient_count }} sent</span>
+                {{ log.sent_at.strftime('%d %b %Y %H:%M') }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updatePreview(el) {
+    const text = el.value;
+    document.getElementById('previewBox').textContent = text || 'Your message will appear here...';
+    document.getElementById('charCount').textContent = text.length + ' characters';
+}
+
+const templates = {
+    special: '🎉 *Special Offer!* \n\nGet 20% OFF on your next order! \n\nValid for today only. \n\nReply *ORDER* to place your order 👆',
+    reminder: '⏰ *Reminder:* \n\nWe miss you! \n\nIt\'s been a while since your last order. Come back and enjoy our exclusive deals! \n\nReply *MENU* to see our offerings.',
+    new: '🆕 *New Arrival!* \n\nCheck out our latest menu item! \n\nCome try something new today. \n\nReply *MENU* to explore 👇',
+    event: '📅 *Coming Soon!* \n\nWe are excited to invite you to our upcoming event! \n\nStay tuned for more details. \n\nFor any queries, just reply!'
+};
+
+function useTemplate(type) {
+    const template = templates[type];
+    if (template) {
+        document.getElementById('broadcastMsg').value = template;
+        updatePreview(document.getElementById('broadcastMsg'));
+    }
+}
+
+async function sendBroadcast() {
+    const msg = document.getElementById('broadcastMsg').value.trim();
+    if (!msg) { showStatus('Please type a message first.', 'error'); return; }
+    if (!confirm(`Send this message to {{ customer_count }} customers?`)) return;
+
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending...';
+    showStatus('⏳ Sending broadcast...', 'loading');
+
+    const res  = await fetch('/api/send-broadcast', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+
+    btn.disabled = false;
+    btn.textContent = '📢 Send to {{ customer_count }} Customers';
+
+    if (data.success) {
+        showStatus(`✅ Sent to ${data.sent_to} customers!`, 'success');
+        document.getElementById('broadcastMsg').value = '';
+        document.getElementById('previewBox').textContent = 'Your message will appear here...';
+        setTimeout(() => location.reload(), 2000);
+    } else {
+        showStatus('❌ ' + (data.error || 'Failed to send.'), 'error');
+    }
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('statusMsg');
+    el.textContent = msg;
+    el.className = 'status-msg ' + type;
+}
+</script>
+</body>
+</html>
