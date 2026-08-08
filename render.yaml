@@ -16,7 +16,7 @@ services:
         fromService:
           type: web
           name: botify-baileys
-          property: hostport
+          property: url
       - key: GROQ_API_KEY
         sync: false
       - key: ADMIN_EMAIL
@@ -38,7 +38,7 @@ services:
         fromService:
           type: web
           name: botify-flask
-          property: hostport
+          property: url
       - key: SECRET_KEY
         fromService:
           type: web

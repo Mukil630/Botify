@@ -9,7 +9,10 @@ from datetime import datetime, timedelta
 import requests
 import os
 
-BAILEYS_URL = os.environ.get('BAILEYS_URL', 'https://luminous-kindness-production.up.railway.app')
+raw_baileys_url = os.environ.get('BAILEYS_URL', 'http://localhost:3000').strip()
+if raw_baileys_url and not raw_baileys_url.startswith(('http://', 'https://')):
+    raw_baileys_url = f'http://{raw_baileys_url}'
+BAILEYS_URL = raw_baileys_url.rstrip('/')
 
 def send_booking_reminders(app):
     with app.app_context():
