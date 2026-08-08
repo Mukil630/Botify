@@ -1,7 +1,7 @@
 services:
   - type: web
     name: botify-flask
-    env: python
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn "app:create_app()"
     envVars:
@@ -15,7 +15,7 @@ services:
         fromService:
           type: web
           name: botify-baileys
-          property: url
+          property: hostport
       - key: GROQ_API_KEY
         sync: false
       - key: ADMIN_EMAIL
@@ -26,7 +26,7 @@ services:
   - type: web
     name: botify-baileys
     rootDir: baileys-service
-    env: node
+    runtime: node
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -36,7 +36,7 @@ services:
         fromService:
           type: web
           name: botify-flask
-          property: url
+          property: hostport
       - key: SECRET_KEY
         fromService:
           type: web
